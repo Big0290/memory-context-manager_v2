@@ -1,0 +1,14 @@
+{
+  "active_task_id": null,
+  "active_identity": "default",
+  "current_focus": null,
+  "current_session_id": "server_session",
+  "session_start_time": "2025-08-07 19:04:20.486539",
+  "frontal_activity": 0.5,
+  "memory_activity": 0.5,
+  "emotion_activity": 0.5,
+  "last_reflection": null,
+  "memory_consolidation_needed": false,
+  "debug_mode": false,
+  "thought_trace": []
+}

@@ -1,0 +1,12 @@
+[project]
+name = "memory-context-manager-v2"
+version = "0.1.0"
+description = "Extensible MCP server for Cursor agent with plugin system"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.0.0",
+    "pydantic>=2.0.0",
+    "typing-extensions>=4.0.0",
+    "psutil>=5.9.0",
+]

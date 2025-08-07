@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "memory-context-manager": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "main.py"
+      ],
+      "cwd": "/Users/jonathanmorand/Documents/ProjectsFolder/MCP_FOLDER/memmory-context-manager/memory-context-manager_v2",
+      "env": {
+        "PYTHONPATH": "/Users/jonathanmorand/Documents/ProjectsFolder/MCP_FOLDER/memmory-context-manager/memory-context-manager_v2"
+      }
+    }
+  }
+}

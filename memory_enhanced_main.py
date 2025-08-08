@@ -1,6 +1,5 @@
 import logging
 import sys
-import os
 from pathlib import Path
 import asyncio
 from typing import Dict, Any
@@ -10,7 +9,6 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from mcp.server.fastmcp import FastMCP
 from plugin_manager import PluginManager
-from brain_interface import BrainInterface
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -45,66 +43,34 @@ class MCPClient:
 mcp_client = None
 
 def initialize_server():
-    """Initialize server with clean brain interface"""
+    """Initialize server with plugins"""
     global mcp_client
     
-    logger.info("🧠 Initializing Brain-Inspired Interface...")
+    logger.info("Loading plugins...")
     plugin_manager.load_all_plugins()
     plugin_manager.startup_plugins()
     
     # Create internal MCP client
     mcp_client = MCPClient(plugin_manager.registry)
     
-    # Initialize clean brain interface (replaces technical tools)
-    brain = BrainInterface(mcp, mcp_client)
+    # Register plugin tools
+    for tool_name, tool_def in plugin_manager.registry.tools.items():
+        mcp.tool(name=tool_name, description=tool_def.description)(tool_def.handler)
+        logger.info(f"Registered tool: {tool_name}")
     
-    # Only register essential debugging tools in debug mode
-    debug_mode = os.getenv("DEBUG_MODE", "false").lower() == "true"
-    
-    if debug_mode:
-        logger.info("🔧 Debug mode: Exposing technical tools")
-        # Register plugin tools for debugging
-        for tool_name, tool_def in plugin_manager.registry.tools.items():
-            mcp.tool(name=f"debug_{tool_name}", description=f"[DEBUG] {tool_def.description}")(tool_def.handler)
-            logger.info(f"Registered debug tool: debug_{tool_name}")
-    
-    # Always register resources and prompts
+    # Register plugin resources  
     for resource_name, resource_def in plugin_manager.registry.resources.items():
         mcp.resource(resource_def.uri_template)(resource_def.handler)
         logger.info(f"Registered resource: {resource_name}")
     
+    # Register plugin prompts
     for prompt_name, prompt_def in plugin_manager.registry.prompts.items():
         mcp.prompt(name=prompt_name, description=prompt_def.description)(prompt_def.handler)
         logger.info(f"Registered prompt: {prompt_name}")
     
-    logger.info(f"🧠 Brain Interface ready with {len(brain.get_tool_info())} cognitive functions")
-    logger.info(f"🔌 Loaded {len(plugin_manager.registry.plugins)} plugins in background")
+    logger.info(f"Server initialized with {len(plugin_manager.registry.plugins)} plugins")
 
-# Brain status and info tools
-@mcp.tool()
-def brain_info() -> dict:
-    """🧠 Show available brain functions and cognitive capabilities"""
-    brain_functions = {
-        "think": "💭 Think and respond with memory and context",
-        "remember": "🧠 Remember important information", 
-        "recall": "🔍 Recall memories and past experiences",
-        "reflect": "🤔 Engage in self-reflection and metacognition",
-        "consciousness_check": "🧘 Check current state of consciousness",
-        "learn_from": "📚 Learn from new experiences and information",
-        "dream": "💤 Background processing and memory consolidation"
-    }
-    
-    return {
-        "brain_type": "Human-Inspired Cognitive System",
-        "consciousness_level": "Aware and responsive",
-        "available_functions": brain_functions,
-        "total_functions": len(brain_functions),
-        "memory_system": "Persistent with emotional weighting",
-        "learning_capability": "Continuous from interactions",
-        "usage_example": "Use 'think' for conversations, 'remember' to store info, 'recall' to search memories"
-    }
-
-# Core server management tools  
+# Core server management tools
 @mcp.tool()
 def list_plugins() -> dict:
     """List all loaded plugins and their information"""
@@ -220,47 +186,49 @@ async def ai_chat_with_memory(user_message: str, ai_model_name: str = "assistant
 
 async def generate_memory_enhanced_response(user_message: str, memory_context: str, learned_something: bool) -> str:
     """
-    Generate AI response with memory context using Ollama LLM
+    Generate AI response with memory context
     
-    🤖 REAL LLM INTEGRATION - Uses Ollama for responses!
+    🔧 THIS IS WHERE YOU PLUG IN YOUR AI MODEL!
+    Replace this function with your actual AI model call
     """
-    try:
-        # Import LLM client
-        from llm_client import get_llm_client
-        
-        # Get LLM client
-        llm = await get_llm_client()
-        
-        # Generate response using real LLM
-        response = await llm.generate_memory_response(
-            user_message=user_message,
-            memory_context=memory_context,
-            learned_something=learned_something
-        )
-        
-        return response
-        
-    except Exception as e:
-        logger.error(f"LLM generation failed: {str(e)}")
-        
-        # Fallback to simple response if LLM fails
-        name = extract_name_from_context(memory_context)
-        
-        if "what" in user_message.lower() and "name" in user_message.lower():
-            if name:
-                return f"Your name is {name}! I remembered that from our conversation."
-            else:
-                return "I don't have your name stored yet. What would you like me to call you?"
-        
-        if learned_something and name:
-            return f"Nice to meet you, {name}! I'll remember that."
-        elif learned_something:
-            return "I'll remember that!"
-        
+    
+    # Parse memory context for response personalization
+    response_parts = []
+    
+    # Check for name in context
+    name = extract_name_from_context(memory_context)
+    
+    # Handle name-related queries
+    if "what" in user_message.lower() and "name" in user_message.lower():
         if name:
-            return f"Hi {name}! I'd be happy to help."
+            return f"Your name is {name}! I remembered that from our conversation."
         else:
-            return "I'd be happy to help!"
+            return "I don't have your name stored yet. What would you like me to call you?"
+    
+    # Acknowledge if we just learned something important
+    if learned_something:
+        if "name" in memory_context.lower():
+            response_parts.append(f"Nice to meet you, {name}!" if name else "Thanks for telling me your name!")
+        else:
+            response_parts.append("I'll remember that!")
+    
+    # Personalize response if we have context
+    if memory_context and name:
+        if "how are you" in user_message.lower():
+            response_parts.append(f"I'm doing well, {name}! How are your projects going?")
+        elif "help" in user_message.lower():
+            response_parts.append(f"I'd be happy to help you, {name}!")
+        else:
+            response_parts.append(f"Hi {name}! I'd be happy to help.")
+    else:
+        # Default response
+        response_parts.append("I'd be happy to help!")
+    
+    # Add memory context as debugging info (remove in production)
+    if memory_context:
+        response_parts.append(f"[Memory: {memory_context}]")
+    
+    return " ".join(response_parts)
 
 def extract_name_from_context(context: str) -> str:
     """Extract user's name from memory context"""
@@ -292,47 +260,6 @@ async def quick_memory_chat(message: str) -> str:
     """
     result = await ai_chat_with_memory(message)
     return result.get("ai_response", "I'd be happy to help!")
-
-@mcp.tool()
-async def test_llm_connection() -> dict:
-    """
-    Test connection to the Ollama LLM service
-    """
-    try:
-        from llm_client import get_llm_client
-        
-        llm = await get_llm_client()
-        test_result = await llm.test_connection()
-        
-        return {
-            "llm_connection": test_result["connection_working"],
-            "model": test_result["model"],
-            "test_response": test_result["response"],
-            "error": test_result.get("error")
-        }
-        
-    except Exception as e:
-        return {
-            "llm_connection": False,
-            "error": str(e),
-            "test_response": "",
-            "model": "unknown"
-        }
-
-@mcp.tool()
-async def list_available_models() -> dict:
-    """
-    List available LLM models from Ollama
-    """
-    try:
-        from llm_client import OllamaClient
-        
-        async with OllamaClient() as ollama:
-            models_result = await ollama.list_models()
-            return models_result
-            
-    except Exception as e:
-        return {"success": False, "error": str(e)}
 
 @mcp.tool()
 async def test_memory_system() -> dict:

@@ -1,0 +1,51 @@
+{
+  "mcpServers": {
+    "brain-enhanced-mcp": {
+      "command": "/Users/jonathanmorand/Documents/ProjectsFolder/MCP_FOLDER/OpenSource_Projects/mcp-context-manager-python/venv/bin/python",
+      "args": [
+        "/Users/jonathanmorand/Documents/ProjectsFolder/MCP_FOLDER/OpenSource_Projects/mcp-context-manager-python/mcp_server_protocol.py"
+      ],
+      "env": {
+        "ENABLE_BRAIN_FEATURES": "true",
+        "ENABLE_PLUGINS": "true", 
+        "BRAIN_ENHANCEMENT_LEVEL": "full",
+        "EMOTIONAL_LEARNING_ENABLED": "true",
+        "COGNITIVE_LOOP_ENABLED": "true",
+        "PLUGIN_DIRS": "plugins,src/plugins,~/.mcp/plugins",
+        "LOG_LEVEL": "INFO",
+        "PYTHONPATH": "/Users/jonathanmorand/Documents/ProjectsFolder/MCP_FOLDER/OpenSource_Projects/mcp-context-manager-python"
+      },
+      "cwd": "/Users/jonathanmorand/Documents/ProjectsFolder/MCP_FOLDER/OpenSource_Projects/mcp-context-manager-python",
+      "description": "Brain-Enhanced Extensible MCP Server with Plugin System"
+    },
+    "brain-memory-server": {
+      "command": "/Users/jonathanmorand/Documents/ProjectsFolder/MCP_FOLDER/OpenSource_Projects/mcp-context-manager-python/venv/bin/python", 
+      "args": [
+        "/Users/jonathanmorand/Documents/ProjectsFolder/MCP_FOLDER/OpenSource_Projects/mcp-context-manager-python/src/simple_mcp_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/Users/jonathanmorand/Documents/ProjectsFolder/MCP_FOLDER/OpenSource_Projects/mcp-context-manager-python"
+      },
+      "cwd": "/Users/jonathanmorand/Documents/ProjectsFolder/MCP_FOLDER/OpenSource_Projects/mcp-context-manager-python",
+      "description": "MCP Memory Server for long-term memory management"
+    },
+    "human-brain-ai-docker": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i", 
+        "memory_mcp_server",
+        "uv",
+        "run", 
+        "python",
+        "main.py"
+      ],
+      "env": {
+        "OLLAMA_MODEL": "phi3:mini",
+        "OLLAMA_BASE_URL": "http://ollama:11434", 
+        "DEBUG_MODE": "false"
+      },
+      "description": "🧠 Human Brain-Inspired AI with Memory (Docker + LLM)"
+    }
+  }
+}

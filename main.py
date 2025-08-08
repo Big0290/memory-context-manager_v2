@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 from mcp.server.fastmcp import FastMCP
 from plugin_manager import PluginManager
 from brain_interface import BrainInterface
+from database import get_brain_db, patch_json_operations
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -49,6 +50,15 @@ def initialize_server():
     global mcp_client
     
     logger.info("🧠 Initializing Brain-Inspired Interface...")
+    
+    # Initialize database system first
+    logger.info("🗄️ Initializing persistent database...")
+    brain_db = get_brain_db()
+    
+    # Patch JSON operations for backward compatibility
+    patch_json_operations()
+    logger.info("🔧 Database compatibility layer active")
+    
     plugin_manager.load_all_plugins()
     plugin_manager.startup_plugins()
     
@@ -91,7 +101,8 @@ def brain_info() -> dict:
         "reflect": "🤔 Engage in self-reflection and metacognition",
         "consciousness_check": "🧘 Check current state of consciousness",
         "learn_from": "📚 Learn from new experiences and information",
-        "dream": "💤 Background processing and memory consolidation"
+        "dream": "💤 Background processing and memory consolidation",
+        "memory_stats": "📊 Check memory database statistics and health"
     }
     
     return {

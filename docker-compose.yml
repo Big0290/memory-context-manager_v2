@@ -45,6 +45,7 @@ services:
     volumes:
       - ./brain_memory_store:/app/brain_memory_store
       - ./logs:/app/logs
+      - brain_database:/app/database
     depends_on:
       - ollama
     restart: unless-stopped
@@ -100,6 +101,8 @@ volumes:
     name: memory_ollama_data
   ollama_webui_data:
     name: memory_ollama_webui_data
+  brain_database:
+    name: memory_brain_database
 
 networks:
   memory_network:

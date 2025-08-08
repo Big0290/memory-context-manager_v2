@@ -22,7 +22,7 @@ RUN uv sync --frozen
 COPY . .
 
 # Create necessary directories
-RUN mkdir -p /app/brain_memory_store /app/logs
+RUN mkdir -p /app/brain_memory_store /app/logs /app/database
 
 # Set environment variables
 ENV PYTHONPATH=/app/src:/app

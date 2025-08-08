@@ -296,7 +296,61 @@ class BrainInterface:
                     "error": str(e)
                 }
 
-        logger.info("🧠 Brain Interface: Registered 7 human-inspired cognitive tools")
+        @self.mcp.tool()
+        async def memory_stats() -> dict:
+            """
+            📊 Check memory database statistics and health
+            
+            Like human memory introspection - examines memory storage,
+            recent activity, and overall cognitive health.
+            """
+            try:
+                from database import get_brain_db
+                db = get_brain_db()
+                
+                # Get basic stats
+                import sqlite3
+                with sqlite3.connect(db.db_path) as conn:
+                    # Count memories by type
+                    memory_counts = {}
+                    for table in ['memory_store', 'memory_chunks', 'conversation_memories', 'context_history']:
+                        cursor = conn.execute(f"SELECT COUNT(*) FROM {table}")
+                        memory_counts[table] = cursor.fetchone()[0]
+                    
+                    # Get recent activity
+                    cursor = conn.execute("""
+                        SELECT COUNT(*) FROM memory_store 
+                        WHERE datetime(timestamp) > datetime('now', '-24 hours')
+                    """)
+                    recent_memories = cursor.fetchone()[0]
+                    
+                    # Database size
+                    cursor = conn.execute("PRAGMA page_count")
+                    page_count = cursor.fetchone()[0]
+                    cursor = conn.execute("PRAGMA page_size") 
+                    page_size = cursor.fetchone()[0]
+                    db_size_mb = (page_count * page_size) / (1024 * 1024)
+                
+                return {
+                    "memory_system": "healthy",
+                    "storage_type": "SQLite (persistent)",
+                    "database_size_mb": round(db_size_mb, 2),
+                    "memory_counts": memory_counts,
+                    "recent_activity_24h": recent_memories,
+                    "total_memories": sum(memory_counts.values()),
+                    "persistence": "permanent",
+                    "compatibility": "JSON-compatible"
+                }
+                
+            except Exception as e:
+                logger.error(f"Memory stats error: {str(e)}")
+                return {
+                    "memory_system": "error",
+                    "error": str(e),
+                    "storage_type": "unknown"
+                }
+
+        logger.info("🧠 Brain Interface: Registered 8 human-inspired cognitive tools")
 
     def get_tool_info(self) -> Dict[str, str]:
         """Get information about available brain tools"""
@@ -307,5 +361,6 @@ class BrainInterface:
             "reflect": "🤔 Engage in self-reflection and metacognition",
             "consciousness_check": "🧘 Check current state of consciousness",
             "learn_from": "📚 Learn from new experiences and information",
-            "dream": "💤 Background processing and memory consolidation"
+            "dream": "💤 Background processing and memory consolidation",
+            "memory_stats": "📊 Check memory database statistics and health"
         }

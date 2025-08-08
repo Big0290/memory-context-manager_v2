@@ -12,6 +12,190 @@ from ..core.brain_core import CognitiveBrain
 from ..adapters.memory_adapter import JsonFileStorageAdapter
 from ..schemas.memory_schema import BrainState, ContextType, EmotionalWeight
 
+# Import database adapter
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+from database import get_brain_db
+
+
+class DatabaseStorageAdapter:
+    """Adapter to make our SQLite database work with the cognitive brain system"""
+    
+    def __init__(self, db):
+        self.db = db
+    
+    def get_memory_store(self):
+        """Get all memories in the format expected by the brain"""
+        memory_data = self.db.get_memory_store()
+        return memory_data.get("memory_store", {})
+    
+    def search_memories(self, query: str, limit: int = 10):
+        """Search memories and return in brain-compatible format"""
+        results = self.db.search_memory_store(query, limit)
+        
+        # Convert to brain-compatible format
+        memories = []
+        for result in results:
+            memories.append({
+                "key": result.get("key", ""),
+                "content": result.get("value", ""),
+                "tags": result.get("tags", []),
+                "confidence": 1.0,  # Default confidence
+                "emotional_weight": result.get("emotional_weight", "routine"),
+                "timestamp": result.get("timestamp", "")
+            })
+        
+        return {"memories": memories, "total_found": len(memories)}
+    
+    def store_memory(self, key: str, content: str, tags: list, emotional_weight: str = "routine"):
+        """Store memory in database"""
+        return self.db.set_memory_item(key, content, tags, emotional_weight)
+    
+    def get_brain_state(self):
+        """Get brain state - using default for now"""
+        brain_state_data = self.db.get_brain_state()
+        
+        # Convert to BrainState object if needed
+        from ..schemas.memory_schema import BrainState
+        
+        return BrainState(
+            active_identity=brain_state_data.get("active_identity", "default"),
+            current_focus=brain_state_data.get("current_focus", "general"),
+            memory_activity=brain_state_data.get("memory_activity", 0.5),
+            emotion_activity=brain_state_data.get("emotion_activity", 0.5),
+            last_reflection=None
+        )
+    
+    def store_brain_state(self, brain_state):
+        """Store brain state to database"""
+        # Convert brain state to serializable format
+        if hasattr(brain_state, 'dict'):
+            state_data = brain_state.dict()
+        else:
+            state_data = brain_state
+        
+        # Convert any datetime objects to strings
+        def make_serializable(obj):
+            if hasattr(obj, 'isoformat'):
+                return obj.isoformat()
+            elif isinstance(obj, dict):
+                return {k: make_serializable(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [make_serializable(v) for v in obj]
+            else:
+                return obj
+        
+        serializable_state = make_serializable(state_data)
+        return self.db.update_brain_state(serializable_state)
+    
+    def get_recent_memories(self, hours: int = 24):
+        """Get recent memories - simplified version"""
+        # For now, just return empty list as this is mostly for debugging
+        return []
+    
+    def get_all_identities(self):
+        """Get all stored identities"""
+        identities_data = self.db.get_brain_state().get("identities", {})
+        return identities_data
+    
+    def store_identity(self, identity, identity_data: dict = None):
+        """Store identity data"""
+        # Handle IdentityProfile objects
+        if hasattr(identity, 'dict'):
+            # It's a Pydantic model (IdentityProfile)
+            identity_data = identity.dict()
+            identity_id = identity.id
+        elif isinstance(identity, str):
+            # It's an identity_id string
+            identity_id = identity
+            if identity_data is None:
+                identity_data = {"id": identity_id, "stored": True}
+        else:
+            # Unknown format, try to handle gracefully
+            identity_id = str(identity)
+            identity_data = {"id": identity_id, "stored": True, "raw": str(identity)}
+        
+        # Store in brain state
+        brain_state = self.db.get_brain_state()
+        if "identities" not in brain_state:
+            brain_state["identities"] = {}
+        brain_state["identities"][identity_id] = identity_data
+        return self.db.update_brain_state(brain_state)
+    
+    def get_context_history(self):
+        """Get context history"""
+        # Use brain state to get recent context or fallback
+        try:
+            brain_state = self.db.get_brain_state()
+            return brain_state.get("context_history", [])
+        except:
+            return []
+    
+    def store_context(self, context_data: dict):
+        """Store context data"""
+        return self.db.add_context_history(context_data)
+    
+    def retrieve_identity(self, identity_id: str):
+        """Retrieve identity by ID"""
+        brain_state = self.db.get_brain_state()
+        identities = brain_state.get("identities", {})
+        if identity_id in identities:
+            identity_data = identities[identity_id]
+            # Convert back to IdentityProfile if needed
+            from ..schemas.memory_schema import IdentityProfile
+            try:
+                return IdentityProfile(**identity_data)
+            except:
+                # If conversion fails, return None
+                return None
+        return None
+    
+    def save_brain_state(self, brain_state):
+        """Save brain state - alias for store_brain_state"""
+        return self.store_brain_state(brain_state)
+    
+    def store_task_context(self, task_context):
+        """Store task context"""
+        # For now, store in brain state
+        brain_state = self.db.get_brain_state()
+        if "tasks" not in brain_state:
+            brain_state["tasks"] = {}
+        
+        if hasattr(task_context, 'dict'):
+            task_data = task_context.dict()
+            task_id = task_context.id
+        else:
+            task_data = task_context
+            task_id = task_context.get('id', 'unknown')
+            
+        brain_state["tasks"][task_id] = task_data
+        return self.db.update_brain_state(brain_state)
+    
+    def retrieve_task_context(self, task_id: str):
+        """Retrieve task context by ID"""
+        brain_state = self.db.get_brain_state()
+        tasks = brain_state.get("tasks", {})
+        if task_id in tasks:
+            task_data = tasks[task_id]
+            # Convert back to TaskContext if needed
+            from ..schemas.memory_schema import TaskContext
+            try:
+                return TaskContext(**task_data)
+            except:
+                return None
+        return None
+    
+    def get_active_tasks(self):
+        """Get all active tasks"""
+        brain_state = self.db.get_brain_state()
+        tasks = brain_state.get("tasks", {})
+        active_tasks = []
+        for task_data in tasks.values():
+            if task_data.get('status') == 'active':
+                active_tasks.append(task_data)
+        return active_tasks
+
 
 class BrainPluginIntegration:
     """
@@ -19,8 +203,11 @@ class BrainPluginIntegration:
     """
     
     def __init__(self, storage_dir: str = "brain_memory_store"):
-        # Initialize storage adapter
-        self.storage_adapter = JsonFileStorageAdapter(storage_dir)
+        # Use database storage instead of JSON files
+        self.db = get_brain_db()
+        
+        # Create a database adapter wrapper for the cognitive brain
+        self.storage_adapter = DatabaseStorageAdapter(self.db)
         
         # Initialize cognitive brain
         self.brain = CognitiveBrain(self.storage_adapter)
@@ -211,11 +398,8 @@ class BrainPluginIntegration:
     
     async def recall_memories(self, query: str, limit: int = 10) -> Dict[str, Any]:
         """Search and recall memories"""
-        return self._process_with_module("memory_core", {
-            "type": "search_memory",
-            "query": query,
-            "limit": limit
-        })
+        # Use the database adapter directly for searching
+        return self.storage_adapter.search_memories(query, limit)
     
     async def trigger_reflection(self, focus_areas: List[str], period_hours: int) -> Dict[str, Any]:
         """Trigger brain reflection process"""

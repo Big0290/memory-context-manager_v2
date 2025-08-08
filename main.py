@@ -346,6 +346,128 @@ async def list_available_models() -> dict:
         return {"success": False, "error": str(e)}
 
 @mcp.tool()
+async def get_cursor_context() -> dict:
+    """
+    🎯 Get comprehensive context for Cursor conversations
+    
+    Provides assistant identity, user info, and conversation history
+    for seamless Cursor integration
+    """
+    global mcp_client
+    
+    if not mcp_client:
+        return {"context": "Basic assistant without memory access"}
+    
+    try:
+        # Get user context
+        context_result = await mcp_client.call_tool("get_user_context", query="assistant identity user preferences conversation")
+        
+        # Get recent conversation history
+        from database import get_brain_db
+        db = get_brain_db()
+        recent_conversations = db.get_conversation_history(limit=3)
+        
+        context_parts = []
+        
+        # Assistant identity
+        if context_result.get("success"):
+            context_summary = context_result.get("context_summary", "")
+            if context_summary:
+                context_parts.append(f"Assistant Identity: {context_summary}")
+        
+        # User information
+        user_info = context_result.get("user_info", {}) if context_result.get("success") else {}
+        if user_info.get("name"):
+            context_parts.append(f"User: {', '.join(user_info['name'][:2])}")
+        if user_info.get("preferences"):
+            context_parts.append(f"Preferences: {', '.join(user_info['preferences'][:2])}")
+        
+        # Recent activity
+        if recent_conversations:
+            context_parts.append(f"Recent conversations: {len(recent_conversations)} in memory")
+        
+        return {
+            "context": " | ".join(context_parts) if context_parts else "Fresh conversation - no prior context",
+            "assistant_name": next((name for name in user_info.get("name", []) if name.lower() in ["johny", "jonathan"]), "Memory Assistant"),
+            "user_names": user_info.get("name", []),
+            "preferences": user_info.get("preferences", []),
+            "conversation_count": len(recent_conversations),
+            "ready_for_conversation": True
+        }
+        
+    except Exception as e:
+        logger.error(f"Cursor context error: {str(e)}")
+        return {
+            "context": f"Assistant ready (memory system: {str(e)})",
+            "assistant_name": "Johny",
+            "error": str(e)
+        }
+
+@mcp.tool()
+async def track_cursor_conversation(user_message: str, assistant_response: str = "", conversation_type: str = "coding") -> dict:
+    """
+    📝 Track Cursor conversation for learning and context
+    
+    Automatically learns from Cursor conversations and updates memory
+    """
+    global mcp_client
+    
+    if not mcp_client:
+        return {"success": False, "error": "Memory system not available"}
+    
+    try:
+        # Process the user message for learning
+        learning_result = await mcp_client.call_tool("auto_process_message", user_message=user_message)
+        
+        # Store conversation in database
+        from database import get_brain_db
+        db = get_brain_db()
+        
+        conversation_data = {
+            "type": conversation_type,
+            "platform": "cursor",
+            "user_message": user_message,
+            "assistant_response": assistant_response,
+            "learned": learning_result.get("important_info_found", []) if learning_result.get("success") else []
+        }
+        
+        db.add_context_history(conversation_data)
+        
+        return {
+            "success": True,
+            "learned": learning_result.get("important_info_found", []) if learning_result.get("success") else [],
+            "conversation_stored": True,
+            "memory_updated": learning_result.get("success", False)
+        }
+        
+    except Exception as e:
+        logger.error(f"Conversation tracking error: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@mcp.tool()
+async def cursor_auto_inject_context() -> dict:
+    """
+    🚀 Auto-inject context for new Cursor conversations
+    
+    Provides relevant context automatically when Cursor starts new conversations
+    """
+    cursor_context = await get_cursor_context()
+    
+    if cursor_context.get("ready_for_conversation"):
+        return {
+            "context_available": True,
+            "inject_message": f"Context: {cursor_context['context']}",
+            "assistant_identity": cursor_context.get("assistant_name", "Johny"),
+            "should_inject": True
+        }
+    else:
+        return {
+            "context_available": False,
+            "inject_message": "Starting fresh conversation",
+            "should_inject": False
+        }
+
+@mcp.tool()
 async def test_memory_system() -> dict:
     """
     Test the memory system with sample conversations

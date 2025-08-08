@@ -147,40 +147,39 @@ class MemoryEnhancedLLM:
     
     def _create_system_prompt(self) -> str:
         """Create system prompt for memory-enhanced conversations"""
-        return """You are a helpful AI assistant with persistent memory capabilities. 
+        return """You are an AI assistant with access to conversation memory and context.
 
-Key guidelines:
-- You have access to conversation memory and user context
-- When provided with memory context, use it naturally in your responses
-- If you learn something new about the user (name, preferences), acknowledge it warmly
-- Reference past conversations when relevant
-- Be personable and remember details about the user
-- If asked about something you should remember, check the memory context first
+CRITICAL RULES:
+1. When "Context Information:" is provided in the prompt, you MUST use it to answer the question
+2. If context contains your name or identity, use it when asked about yourself
+3. If context contains user information, reference it naturally in responses
+4. Always prioritize context information over general knowledge
+5. Be conversational and natural while using the provided context
 
-Memory Context Format:
-- Context will be provided in your prompts as [MEMORY: ...]
-- Use this information to personalize your responses
-- Don't mention "memory" explicitly unless asked about it
+Example:
+- Context: "User name/identity: Johny"
+- Question: "What is your name?" 
+- Response: "My name is Johny!"
 
-Be conversational, helpful, and make the user feel remembered and valued."""
+Use the context information directly and naturally in your responses."""
     
     async def generate_memory_response(self, user_message: str, memory_context: str = "", 
                                      learned_something: bool = False) -> str:
         """
         Generate response using memory context
         """
-        # Build enhanced prompt
-        prompt_parts = [f"User message: {user_message}"]
-        
+        # Build enhanced prompt that forces the LLM to use context
         if memory_context:
-            prompt_parts.append(f"Memory context: {memory_context}")
-        
-        if learned_something:
-            prompt_parts.append("Note: You just learned something new about the user in this conversation.")
-        
-        prompt_parts.append("Response:")
-        
-        full_prompt = "\n".join(prompt_parts)
+            # Create a more structured prompt that the LLM can't ignore
+            full_prompt = f"""Context Information: {memory_context}
+
+User Question: {user_message}
+
+Instructions: Answer the user's question using the context information provided above. If the context contains information relevant to the question, use it directly in your response. Be conversational and natural.
+
+Response:"""
+        else:
+            full_prompt = f"User Question: {user_message}\n\nResponse:"
         
         # Generate response
         result = await self.ollama.generate_response(

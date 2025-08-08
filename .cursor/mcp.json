@@ -1,14 +1,16 @@
-  {
-    "mcpServers": {
-      "human-brain-ai-docker": {
-        "command": "docker",
-        "args": [
-          "exec",
-          "-i",
-          "memory_mcp_server",
-          "python",
-          "main.py"
-        ]
+{
+  "mcpServers": {
+    "memory-context-manager": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "main.py"
+      ],
+      "cwd": "/Users/jonathanmorand/Documents/ProjectsFolder/MCP_FOLDER/memmory-context-manager/memory-context-manager_v2",
+      "env": {
+        "PYTHONPATH": "/Users/jonathanmorand/Documents/ProjectsFolder/MCP_FOLDER/memmory-context-manager/memory-context-manager_v2"
       }
     }
   }
+}

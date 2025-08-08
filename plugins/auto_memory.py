@@ -163,9 +163,26 @@ class AutoMemoryPlugin(BasePlugin):
             return {"success": False, "error": "Brain integration not available"}
         
         try:
-            # Search for user information
+            # Search for user information with multiple queries
+            all_memories = []
+            
+            # Try the original query
             search_result = await self._brain_integration.recall_memories(query, 10)
-            memories = search_result.get('memories', [])
+            all_memories.extend(search_result.get('memories', []))
+            
+            # Also try more specific searches 
+            for search_term in ['assistant', 'identity', 'name', 'user']:
+                search_result = await self._brain_integration.recall_memories(search_term, 5)
+                all_memories.extend(search_result.get('memories', []))
+            
+            # Remove duplicates based on key
+            seen_keys = set()
+            memories = []
+            for memory in all_memories:
+                key = memory.get('key', '')
+                if key not in seen_keys:
+                    memories.append(memory)
+                    seen_keys.add(key)
             
             # Build user profile
             user_info = {
@@ -179,7 +196,7 @@ class AutoMemoryPlugin(BasePlugin):
                 content = memory.get('content', '').lower()
                 tags = memory.get('tags', [])
                 
-                if any(tag in ['name', 'personal_name'] for tag in tags) or 'call me' in content or 'name is' in content:
+                if any(tag in ['name', 'personal_name', 'assistant', 'identity'] for tag in tags) or 'call me' in content or 'name is' in content or 'assistant_name' in memory.get('key', ''):
                     user_info["name"].append(memory.get('content', ''))
                 elif any(tag in ['preference'] for tag in tags) or 'like' in content or 'prefer' in content:
                     user_info["preferences"].append(memory.get('content', ''))
@@ -312,7 +329,7 @@ class AutoMemoryPlugin(BasePlugin):
             content = memory.get('content', '')
             tags = memory.get('tags', [])
             
-            if any(tag in ['name', 'personal_name'] for tag in tags):
+            if any(tag in ['name', 'personal_name', 'assistant', 'identity'] for tag in tags):
                 summary_parts.insert(0, f"Name: {content}")  # Put name first
             elif any(tag in ['preference'] for tag in tags):
                 summary_parts.append(f"Preference: {content}")

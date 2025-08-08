@@ -12,6 +12,7 @@ from mcp.server.fastmcp import FastMCP
 from plugin_manager import PluginManager
 from brain_interface import BrainInterface
 from database import get_brain_db, patch_json_operations
+from function_call_logger import get_function_logger, log_mcp_tool, log_brain_function
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -25,22 +26,48 @@ plugin_manager = PluginManager(["plugins"])
 
 # Memory client for internal tool calls
 class MCPClient:
-    """Simple MCP client for internal tool calls"""
+    """Simple MCP client for internal tool calls with comprehensive logging"""
     def __init__(self, plugin_registry):
         self.registry = plugin_registry
     
     async def call_tool(self, tool_name: str, **kwargs) -> Dict[str, Any]:
-        """Call a tool by name with parameters"""
-        if tool_name in self.registry.tools:
-            tool_def = self.registry.tools[tool_name]
-            try:
-                # Call the tool handler
-                result = await tool_def.handler(**kwargs)
-                return result if result else {"success": False, "error": "No result"}
-            except Exception as e:
-                return {"success": False, "error": str(e)}
-        else:
-            return {"success": False, "error": f"Tool {tool_name} not found"}
+        """Call a tool by name with parameters and automatically log everything"""
+        
+        # Get function logger
+        function_logger = get_function_logger()
+        
+        # Extract user message for context
+        user_message = kwargs.get('user_message') or kwargs.get('message') or kwargs.get('query')
+        memory_context = kwargs.get('memory_context', '')
+        
+        async with function_logger.track_function_call(
+            function_name=tool_name,
+            function_type="plugin_tool",
+            input_data=kwargs,
+            user_message=user_message,
+            memory_context=memory_context
+        ) as call_info:
+            
+            if tool_name in self.registry.tools:
+                tool_def = self.registry.tools[tool_name]
+                try:
+                    # Call the tool handler
+                    result = await tool_def.handler(**kwargs)
+                    
+                    # Store successful result
+                    call_info["output_data"] = result
+                    
+                    return result if result else {"success": False, "error": "No result"}
+                    
+                except Exception as e:
+                    # Store error result  
+                    call_info["output_data"] = {"success": False, "error": str(e)}
+                    return {"success": False, "error": str(e)}
+            else:
+                # Store not found error
+                error_result = {"success": False, "error": f"Tool {tool_name} not found"}
+                call_info["output_data"] = error_result
+                return error_result
 
 # Global MCP client instance
 mcp_client = None
@@ -50,6 +77,10 @@ def initialize_server():
     global mcp_client
     
     logger.info("🧠 Initializing Brain-Inspired Interface...")
+    
+    # Initialize function call logger FIRST
+    function_logger = get_function_logger()
+    logger.info("🔍 Comprehensive function call logging enabled")
     
     # Initialize database system first
     logger.info("🗄️ Initializing persistent database...")
@@ -92,6 +123,7 @@ def initialize_server():
 
 # Brain status and info tools
 @mcp.tool()
+@log_mcp_tool
 def brain_info() -> dict:
     """🧠 Show available brain functions and cognitive capabilities"""
     brain_functions = {
@@ -117,6 +149,7 @@ def brain_info() -> dict:
 
 # Core server management tools  
 @mcp.tool()
+@log_mcp_tool
 def list_plugins() -> dict:
     """List all loaded plugins and their information"""
     plugin_info = {}
@@ -133,6 +166,7 @@ def list_plugins() -> dict:
     return plugin_info
 
 @mcp.tool()
+@log_mcp_tool
 def server_status() -> dict:
     """Get server status and statistics"""
     return {
@@ -148,6 +182,7 @@ def server_status() -> dict:
 # 🧠 OPTION A INTEGRATION - ADD THESE NEW MEMORY-ENHANCED TOOLS:
 
 @mcp.tool()
+@log_mcp_tool
 async def ai_chat_with_memory(user_message: str, ai_model_name: str = "assistant") -> dict:
     """
     AI Chat with Automatic Memory - OPTION A INTEGRATION
@@ -296,6 +331,7 @@ def extract_name_from_context(context: str) -> str:
     return ""
 
 @mcp.tool()
+@log_mcp_tool
 async def quick_memory_chat(message: str) -> str:
     """
     Quick memory-enabled chat - simplified version
@@ -305,6 +341,7 @@ async def quick_memory_chat(message: str) -> str:
     return result.get("ai_response", "I'd be happy to help!")
 
 @mcp.tool()
+@log_mcp_tool
 async def test_llm_connection() -> dict:
     """
     Test connection to the Ollama LLM service
@@ -331,6 +368,7 @@ async def test_llm_connection() -> dict:
         }
 
 @mcp.tool()
+@log_mcp_tool
 async def list_available_models() -> dict:
     """
     List available LLM models from Ollama
@@ -346,6 +384,7 @@ async def list_available_models() -> dict:
         return {"success": False, "error": str(e)}
 
 @mcp.tool()
+@log_mcp_tool
 async def get_cursor_context() -> dict:
     """
     🎯 Get comprehensive context for Cursor conversations
@@ -404,6 +443,7 @@ async def get_cursor_context() -> dict:
         }
 
 @mcp.tool()
+@log_mcp_tool
 async def track_cursor_conversation(user_message: str, assistant_response: str = "", conversation_type: str = "coding") -> dict:
     """
     📝 Track Cursor conversation for learning and context
@@ -445,6 +485,7 @@ async def track_cursor_conversation(user_message: str, assistant_response: str =
         return {"success": False, "error": str(e)}
 
 @mcp.tool()
+@log_mcp_tool
 async def cursor_auto_inject_context() -> dict:
     """
     🚀 Auto-inject context for new Cursor conversations
@@ -468,6 +509,7 @@ async def cursor_auto_inject_context() -> dict:
         }
 
 @mcp.tool()
+@log_mcp_tool
 async def test_memory_system() -> dict:
     """
     Test the memory system with sample conversations
@@ -494,6 +536,166 @@ async def test_memory_system() -> dict:
         "test_results": results,
         "memory_working": all(r.get("memory_used") for r in results[1:])  # Should have memory from 2nd message onward
     }
+
+# 🔍 COMPREHENSIVE FUNCTION CALL LOGGING TOOLS
+@mcp.tool()
+@log_mcp_tool
+async def get_function_call_history(limit: int = 50, function_name: str = None) -> dict:
+    """
+    📊 Get comprehensive function call history with full traceability
+    
+    Shows all function calls with inputs, outputs, execution time, and context
+    """
+    try:
+        function_logger = get_function_logger()
+        call_history = function_logger.get_call_history(limit=limit, function_name=function_name)
+        
+        return {
+            "success": True,
+            "total_calls": len(call_history),
+            "function_filter": function_name,
+            "call_history": call_history,
+            "session_id": function_logger._session_id,
+            "logging_enabled": function_logger._enabled
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "call_history": []
+        }
+
+@mcp.tool()
+@log_mcp_tool
+async def get_session_statistics() -> dict:
+    """
+    📈 Get comprehensive session statistics and performance metrics
+    
+    Shows function call breakdown, success rates, and execution times
+    """
+    try:
+        function_logger = get_function_logger()
+        session_stats = function_logger.get_session_stats()
+        
+        return {
+            "success": True,
+            "session_statistics": session_stats,
+            "logging_status": "active" if function_logger._enabled else "disabled"
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "session_statistics": {}
+        }
+
+@mcp.tool()
+@log_mcp_tool
+async def search_function_calls(search_term: str, limit: int = 20) -> dict:
+    """
+    🔍 Search function calls by content, context, or parameters
+    
+    Cross-references all stored data for comprehensive search
+    """
+    try:
+        function_logger = get_function_logger()
+        search_results = function_logger.search_calls_by_context(search_term, limit)
+        
+        return {
+            "success": True,
+            "search_term": search_term,
+            "total_results": len(search_results),
+            "search_results": search_results,
+            "cross_references_available": True
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "search_results": []
+        }
+
+@mcp.tool()
+@log_mcp_tool
+async def get_comprehensive_system_status() -> dict:
+    """
+    🎯 Get comprehensive system status including all logging and memory systems
+    
+    Complete overview of all data storage and cross-referencing capabilities
+    """
+    try:
+        # Function call logging stats
+        function_logger = get_function_logger()
+        session_stats = function_logger.get_session_stats()
+        
+        # Memory system status
+        from database import get_brain_db
+        db = get_brain_db()
+        memory_data = db.get_memory_store()
+        conversations = db.get_conversation_history(limit=5)
+        
+        # Plugin system status
+        plugin_count = len(plugin_manager.registry.plugins)
+        tool_count = len(plugin_manager.registry.tools)
+        
+        # Calculate total data points
+        import sqlite3
+        total_data_points = 0
+        with sqlite3.connect(db.db_path) as conn:
+            # Count all tables
+            tables = ['memory_store', 'conversation_memories', 'context_history', 'function_calls', 'memory_chunks']
+            table_counts = {}
+            
+            for table in tables:
+                try:
+                    cursor = conn.execute(f"SELECT COUNT(*) FROM {table}")
+                    count = cursor.fetchone()[0]
+                    table_counts[table] = count
+                    total_data_points += count
+                except:
+                    table_counts[table] = 0
+        
+        return {
+            "success": True,
+            "system_status": "fully_operational",
+            "comprehensive_logging": {
+                "function_calls_logged": session_stats.get("total_calls", 0),
+                "session_success_rate": session_stats.get("success_rate", 0),
+                "logging_enabled": function_logger._enabled,
+                "session_id": function_logger._session_id
+            },
+            "memory_system": {
+                "total_memories": len(memory_data.get("memory_store", {})),
+                "conversations_stored": len(conversations),
+                "database_path": db.db_path
+            },
+            "plugin_system": {
+                "plugins_loaded": plugin_count,
+                "tools_available": tool_count,
+                "brain_functions": 8  # From brain_info
+            },
+            "data_storage_comprehensive": {
+                "total_data_points": total_data_points,
+                "table_breakdown": table_counts,
+                "cross_referencing_enabled": True,
+                "automatic_storage_active": True
+            },
+            "cursor_integration": {
+                "mcp_configured": True,
+                "conversation_tracking": True,
+                "auto_context_injection": True
+            }
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "system_status": "error"
+        }
 
 if __name__ == "__main__":
     logger.info("Starting Memory Context Manager with AI Memory Integration...")

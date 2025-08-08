@@ -29,14 +29,25 @@ Before responding to any new conversation, automatically call:
 3. **Learning**: Extract and store important information from user messages
 4. **Continuity**: Maintain conversation context across sessions
 
-### Example Usage Pattern
+### MANDATORY WORKFLOW FOR ALL CONVERSATIONS
+**ALWAYS follow this pattern for EVERY interaction:**
+
 ```
-1. New conversation starts
-2. Auto-call cursor_session_start
-3. Retrieve context: "I'm Johny | User: Jonathan | 3 previous conversations"
-4. Respond with context awareness
-5. Learn from interaction with cursor_learn_conversation
+1. Start: Call get_cursor_context() to get current context
+2. Respond: Use the context naturally in your response
+3. End: Call track_cursor_conversation(user_message, assistant_response) to learn
 ```
+
+**Example Commands:**
+- At start: Use `get_cursor_context` tool
+- After response: Use `track_cursor_conversation` tool
+- For memory: Use `cursor_memory_search` tool
+
+### EXPLICIT TRACKING COMMANDS
+Add these to responses when appropriate:
+- "Let me check my memory about this..." → call cursor_memory_search
+- "I'll remember this for next time" → call track_cursor_conversation  
+- "Based on our previous discussions..." → reference get_cursor_context results
 
 ### Memory Context Format
 When memory context is available, incorporate it naturally:

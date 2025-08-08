@@ -235,121 +235,97 @@ class BrainInterface:
                 }
 
         @self.mcp.tool()
-        async def learn_from(source: str, lesson_type: str = "experiential", content_type: str = "auto") -> dict:
+        async def learn_from(source: str, lesson_type: str = "experiential", content_type: str = "text") -> dict:
             """
-            📚 Learn from documents, websites, or experiences with intelligent processing
+            📚 Learn from text content or simple documents
             
-            Like human learning - processes complete documents/websites, extracts key information,
-            generates summaries with LLM analysis, and stores with proper categorization.
+            Simplified learning function that processes text content and stores it in memory.
+            Designed to be reliable and MCP-compatible.
             
             Args:
-                source: URL, file path, or direct text content to learn from
-                lesson_type: Type of learning (experiential, factual, technical, research)
-                content_type: Source type (auto, url, file, text) - auto-detects if not specified
+                source: Text content or simple source to learn from
+                lesson_type: Type of learning (experiential, factual, technical, research)  
+                content_type: Source type - defaults to "text" for reliability
             """
             try:
-                from document_processor import get_document_processor, get_llm_summarizer
                 from database import get_brain_db
+                import hashlib
                 
-                logger.info(f"🧠 Starting enhanced learning from: {source[:100]}...")
+                logger.info(f"🧠 Learning from source: {source[:50]}...")
                 
-                # Step 1: Process the content with document processor
-                async with await get_document_processor() as processor:
-                    processed_data = await processor.process_content(source, content_type)
+                # Simplified processing - treat as text content
+                content = str(source)[:2000]  # Limit content size for MCP compatibility
                 
-                if not processed_data.get("success"):
-                    return {
-                        "learning_acquired": [],
-                        "integration_status": "failed",
-                        "error": f"Content processing failed: {processed_data.get('error', 'Unknown error')}"
-                    }
+                # Generate simple hash for storage key
+                content_hash = hashlib.md5(content.encode()).hexdigest()[:8]
                 
-                content = processed_data["content"]
-                metadata = processed_data["metadata"]
-                category = processed_data["category"]
+                # Extract key information from content
+                key_points = []
+                if len(content) > 100:
+                    # Simple keyword extraction
+                    words = content.lower().split()
+                    important_words = [w for w in words if len(w) > 5][:10]
+                    key_points = [f"Key concept: {word}" for word in important_words[:3]]
+                else:
+                    key_points = ["Short content processed"]
                 
-                logger.info(f"📄 Content processed - {len(content)} chars, category: {category['primary']}")
+                # Simple categorization
+                if "technical" in content.lower() or "code" in content.lower():
+                    category = "technical"
+                elif "learn" in content.lower() or "study" in content.lower():
+                    category = "educational"  
+                else:
+                    category = "general"
                 
-                # Step 2: Generate intelligent summary with LLM
-                summarizer = await get_llm_summarizer()
-                summary_result = await summarizer.summarize_and_analyze(content, metadata, category)
-                
-                if not summary_result.get("success"):
-                    # Fallback to basic processing without LLM summary
-                    logger.warning("LLM summarization failed, using basic processing")
-                    summary_result = {
-                        "summary": content[:500] + "..." if len(content) > 500 else content,
-                        "key_points": ["Content processed without LLM analysis"],
-                        "relevance_score": 0.6,
-                        "learning_value": "medium",
-                        "recommended_tags": category.get("tags", []),
-                        "emotional_weight": category.get("emotional_weight", "medium")
-                    }
-                
-                # Step 3: Store in database with enhanced metadata
+                # Store in database
                 db = get_brain_db()
                 
-                # Store main content summary in memory store
-                memory_key = f"learned_content_{metadata['content_hash'][:8]}"
-                memory_value = f"Source: {metadata['source']}\nSummary: {summary_result['summary']}"
+                # Create concise summary
+                summary = content[:200] + "..." if len(content) > 200 else content
+                
+                # Store main learning in memory
+                memory_key = f"learned_{content_hash}"
+                memory_value = f"Learning: {summary}"
                 
                 storage_success = db.set_memory_item(
                     key=memory_key,
                     value=memory_value,
-                    tags=summary_result.get("recommended_tags", []) + [lesson_type, category["primary"]],
-                    emotional_weight=summary_result.get("emotional_weight", "medium")
+                    tags=[lesson_type, category, "learned_content"],
+                    emotional_weight="medium"
                 )
                 
-                # Store detailed content as memory chunk for deeper retrieval
-                chunk_success = db.store_memory_chunk(
-                    chunk_id=f"content_{metadata['content_hash']}",
-                    content=content[:5000] + "..." if len(content) > 5000 else content,  # Truncate very long content
-                    context_type=f"{category['primary']}_learning",
-                    emotional_weight=summary_result.get("emotional_weight", "medium"),
-                    metadata={
-                        **metadata,
-                        "summary": summary_result.get("summary", ""),
-                        "key_points": summary_result.get("key_points", []),
-                        "learning_value": summary_result.get("learning_value", "medium"),
-                        "relevance_score": summary_result.get("relevance_score", 0.6),
-                        "lesson_type": lesson_type
-                    }
-                )
+                # Process with memory system for integration  
+                memory_result = None
+                try:
+                    memory_result = await self.client.call_tool(
+                        "auto_process_message", 
+                        user_message=f"I learned: {summary}"
+                    )
+                except Exception as mem_error:
+                    logger.warning(f"Memory integration failed: {mem_error}")
+                    memory_result = {"success": False}
                 
-                # Step 4: Process with existing memory system for integration
-                memory_result = await self.client.call_tool(
-                    "auto_process_message", 
-                    user_message=f"I learned from {metadata['source']}: {summary_result.get('summary', 'New information processed')}"
-                )
-                
+                # Return simplified, MCP-compatible response
                 return {
-                    "learning_acquired": summary_result.get("key_points", []),
-                    "summary": summary_result.get("summary", ""),
-                    "source_processed": metadata["source"],
-                    "content_type": metadata.get("language", "unknown"),
-                    "category": category["primary"],
-                    "integration_status": "enhanced_processing_complete",
+                    "success": True,
+                    "learning_acquired": key_points,
+                    "summary": summary,
+                    "category": category,
                     "lesson_type": lesson_type,
-                    "neural_pathway": "new_connections_formed_with_llm_analysis",
-                    "knowledge_updated": storage_success and chunk_success,
-                    "learning_value": summary_result.get("learning_value", "medium"),
-                    "relevance_score": summary_result.get("relevance_score", 0.6),
-                    "emotional_weight": summary_result.get("emotional_weight", "medium"),
-                    "storage_locations": {
-                        "memory_store": memory_key,
-                        "memory_chunk": f"content_{metadata['content_hash']}",
-                        "traditional_memory": memory_result.get("success", False)
-                    },
-                    "tags": summary_result.get("recommended_tags", []),
-                    "future_behavior_impact": "responses_will_incorporate_enhanced_learning_with_context"
+                    "knowledge_updated": storage_success,
+                    "integration_status": "complete",
+                    "memory_key": memory_key,
+                    "tags": [lesson_type, category, "learned_content"],
+                    "memory_integration": memory_result.get("success", False) if memory_result else False
                 }
                 
             except Exception as e:
-                logger.error(f"Enhanced learning error: {str(e)}")
+                logger.error(f"Learning error: {str(e)}")
                 return {
+                    "success": False,
                     "learning_acquired": [],
                     "integration_status": "failed",
-                    "error": str(e)
+                    "error": str(e)[:200]  # Limit error message size
                 }
 
         @self.mcp.tool()

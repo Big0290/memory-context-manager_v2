@@ -1,6 +1,7 @@
 """
 Brain Memory Database Adapter
 Provides persistent SQLite storage while maintaining compatibility with existing JSON-based systems
+Enhanced with comprehensive automatic logging of all operations
 """
 
 import sqlite3
@@ -12,6 +13,14 @@ from typing import Dict, Any, List, Optional
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+# Import logging decorator safely
+try:
+    from function_call_logger import log_database_operation
+except ImportError:
+    # Fallback if not available during initialization
+    def log_database_operation(func):
+        return func
 
 class BrainDatabase:
     """SQLite-based persistent storage for brain memory system"""
@@ -116,6 +125,7 @@ class BrainDatabase:
             logger.info("🗄️ Database schema initialized successfully")
     
     # Memory Store Interface (JSON compatibility)
+    @log_database_operation
     def get_memory_store(self) -> Dict[str, Any]:
         """Get all memory store data (compatible with JSON format)"""
         with sqlite3.connect(self.db_path) as conn:
@@ -138,6 +148,7 @@ class BrainDatabase:
                 "last_updated": datetime.now().isoformat()
             }
     
+    @log_database_operation
     def set_memory_item(self, key: str, value: str, tags: List[str] = None, 
                        emotional_weight: str = "medium") -> bool:
         """Store memory item (compatible with JSON format)"""
@@ -160,6 +171,7 @@ class BrainDatabase:
             logger.error(f"Failed to store memory item {key}: {e}")
             return False
     
+    @log_database_operation
     def search_memory_store(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Search memory store for relevant items"""
         with sqlite3.connect(self.db_path) as conn:
@@ -228,12 +240,22 @@ class BrainDatabase:
             return brain_state
     
     def update_brain_state(self, updates: Dict[str, Any]) -> bool:
-        """Update brain state items"""
+        """Update brain state items with proper datetime serialization"""
         try:
+            def serialize_value(value):
+                """Safely serialize value with datetime handling"""
+                if hasattr(value, 'isoformat'):  # datetime object
+                    return value.isoformat()
+                elif isinstance(value, (dict, list)):
+                    # Recursively handle nested structures
+                    return json.dumps(value, default=str)
+                else:
+                    return str(value)
+            
             with sqlite3.connect(self.db_path) as conn:
                 for key, value in updates.items():
-                    # Convert complex objects to JSON
-                    json_value = json.dumps(value) if isinstance(value, (dict, list)) else str(value)
+                    # Convert complex objects to JSON with datetime handling
+                    json_value = serialize_value(value)
                     
                     conn.execute("""
                         INSERT OR REPLACE INTO brain_state (key, value, updated_at)
@@ -413,6 +435,7 @@ class BrainDatabase:
             
             return chunks
     
+    @log_database_operation
     def store_conversation(self, user_message: str, ai_response: str, context: Dict[str, Any] = None,
                           session_id: str = "default", importance: float = 0.5) -> bool:
         """Store conversation for memory system"""

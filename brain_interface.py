@@ -4,6 +4,7 @@ Clean, intuitive tools that mirror human cognitive functions
 """
 
 import logging
+from datetime import datetime
 from typing import Dict, Any, Optional
 from mcp.server.fastmcp import FastMCP
 
@@ -234,35 +235,117 @@ class BrainInterface:
                 }
 
         @self.mcp.tool()
-        async def learn_from(experience: str, lesson_type: str = "experiential") -> dict:
+        async def learn_from(source: str, lesson_type: str = "experiential", content_type: str = "auto") -> dict:
             """
-            📚 Learn from new experiences and information
+            📚 Learn from documents, websites, or experiences with intelligent processing
             
-            Like human learning - processes new information, integrates it
-            with existing knowledge, and forms new neural pathways.
+            Like human learning - processes complete documents/websites, extracts key information,
+            generates summaries with LLM analysis, and stores with proper categorization.
             
             Args:
-                experience: The experience or information to learn from
-                lesson_type: Type of learning (experiential, factual, emotional, social)
+                source: URL, file path, or direct text content to learn from
+                lesson_type: Type of learning (experiential, factual, technical, research)
+                content_type: Source type (auto, url, file, text) - auto-detects if not specified
             """
             try:
-                # Process as both memory and learning
+                from document_processor import get_document_processor, get_llm_summarizer
+                from database import get_brain_db
+                
+                logger.info(f"🧠 Starting enhanced learning from: {source[:100]}...")
+                
+                # Step 1: Process the content with document processor
+                async with await get_document_processor() as processor:
+                    processed_data = await processor.process_content(source, content_type)
+                
+                if not processed_data.get("success"):
+                    return {
+                        "learning_acquired": [],
+                        "integration_status": "failed",
+                        "error": f"Content processing failed: {processed_data.get('error', 'Unknown error')}"
+                    }
+                
+                content = processed_data["content"]
+                metadata = processed_data["metadata"]
+                category = processed_data["category"]
+                
+                logger.info(f"📄 Content processed - {len(content)} chars, category: {category['primary']}")
+                
+                # Step 2: Generate intelligent summary with LLM
+                summarizer = await get_llm_summarizer()
+                summary_result = await summarizer.summarize_and_analyze(content, metadata, category)
+                
+                if not summary_result.get("success"):
+                    # Fallback to basic processing without LLM summary
+                    logger.warning("LLM summarization failed, using basic processing")
+                    summary_result = {
+                        "summary": content[:500] + "..." if len(content) > 500 else content,
+                        "key_points": ["Content processed without LLM analysis"],
+                        "relevance_score": 0.6,
+                        "learning_value": "medium",
+                        "recommended_tags": category.get("tags", []),
+                        "emotional_weight": category.get("emotional_weight", "medium")
+                    }
+                
+                # Step 3: Store in database with enhanced metadata
+                db = get_brain_db()
+                
+                # Store main content summary in memory store
+                memory_key = f"learned_content_{metadata['content_hash'][:8]}"
+                memory_value = f"Source: {metadata['source']}\nSummary: {summary_result['summary']}"
+                
+                storage_success = db.set_memory_item(
+                    key=memory_key,
+                    value=memory_value,
+                    tags=summary_result.get("recommended_tags", []) + [lesson_type, category["primary"]],
+                    emotional_weight=summary_result.get("emotional_weight", "medium")
+                )
+                
+                # Store detailed content as memory chunk for deeper retrieval
+                chunk_success = db.store_memory_chunk(
+                    chunk_id=f"content_{metadata['content_hash']}",
+                    content=content[:5000] + "..." if len(content) > 5000 else content,  # Truncate very long content
+                    context_type=f"{category['primary']}_learning",
+                    emotional_weight=summary_result.get("emotional_weight", "medium"),
+                    metadata={
+                        **metadata,
+                        "summary": summary_result.get("summary", ""),
+                        "key_points": summary_result.get("key_points", []),
+                        "learning_value": summary_result.get("learning_value", "medium"),
+                        "relevance_score": summary_result.get("relevance_score", 0.6),
+                        "lesson_type": lesson_type
+                    }
+                )
+                
+                # Step 4: Process with existing memory system for integration
                 memory_result = await self.client.call_tool(
                     "auto_process_message", 
-                    user_message=f"Learning from: {experience}"
+                    user_message=f"I learned from {metadata['source']}: {summary_result.get('summary', 'New information processed')}"
                 )
                 
                 return {
-                    "learning_acquired": memory_result.get("important_info_found", []),
-                    "integration_status": "processed",
+                    "learning_acquired": summary_result.get("key_points", []),
+                    "summary": summary_result.get("summary", ""),
+                    "source_processed": metadata["source"],
+                    "content_type": metadata.get("language", "unknown"),
+                    "category": category["primary"],
+                    "integration_status": "enhanced_processing_complete",
                     "lesson_type": lesson_type,
-                    "neural_pathway": "new_connections_formed",
-                    "knowledge_updated": memory_result.get("success", False),
-                    "future_behavior_impact": "responses_will_incorporate_learning"
+                    "neural_pathway": "new_connections_formed_with_llm_analysis",
+                    "knowledge_updated": storage_success and chunk_success,
+                    "learning_value": summary_result.get("learning_value", "medium"),
+                    "relevance_score": summary_result.get("relevance_score", 0.6),
+                    "emotional_weight": summary_result.get("emotional_weight", "medium"),
+                    "storage_locations": {
+                        "memory_store": memory_key,
+                        "memory_chunk": f"content_{metadata['content_hash']}",
+                        "traditional_memory": memory_result.get("success", False)
+                    },
+                    "tags": summary_result.get("recommended_tags", []),
+                    "future_behavior_impact": "responses_will_incorporate_enhanced_learning_with_context"
                 }
                 
             except Exception as e:
-                logger.error(f"Learning error: {str(e)}")
+                logger.error(f"Enhanced learning error: {str(e)}")
                 return {
                     "learning_acquired": [],
                     "integration_status": "failed",
@@ -295,6 +378,88 @@ class BrainInterface:
                     "dream_state": "disrupted",
                     "error": str(e)
                 }
+
+        @self.mcp.tool()
+        async def initialize_chat_session(user_identity: str = "user", context_type: str = "conversation") -> dict:
+            """
+            🚀 Initialize chat session with persona and interaction history
+            
+            Like human conversation startup - recalls who you're talking to,
+            reviews past interactions, and prepares relevant context.
+            
+            Args:
+                user_identity: Who is starting the conversation
+                context_type: Type of conversation (casual, work, technical, creative)
+            """
+            try:
+                from database import get_brain_db
+                db = get_brain_db()
+                
+                logger.info(f"🚀 Initializing chat session for {user_identity} - {context_type}")
+                
+                # Step 1: Load user identity profile
+                identity_profiles = db.get_identity_profiles()
+                user_profile = None
+                
+                for identity in identity_profiles.get("identities", []):
+                    if identity.get("name", "").lower() == user_identity.lower() or identity.get("id") == user_identity:
+                        user_profile = identity
+                        break
+                
+                # Step 2: Get recent conversation history for this user
+                recent_conversations = db.get_conversation_history(session_id=user_identity, limit=10)
+                
+                # Step 3: Search for relevant memories and experiences
+                memory_search_results = db.search_memory_store(user_identity, limit=5)
+                
+                # Step 4: Get relevant learning content
+                relevant_chunks = db.search_memory_chunks(
+                    query=f"{user_identity} {context_type}", 
+                    limit=3
+                )
+                
+                # Step 5: Generate interaction summary
+                interaction_summary = await self._generate_interaction_summary(
+                    user_profile, recent_conversations, memory_search_results, relevant_chunks
+                )
+                
+                # Step 6: Update brain state with session info
+                session_updates = {
+                    "current_session_user": user_identity,
+                    "session_context_type": context_type,
+                    "session_start_time": datetime.now().isoformat(),
+                    "persona_loaded": user_profile is not None,
+                    "interaction_history_loaded": len(recent_conversations) > 0
+                }
+                
+                db.update_brain_state(session_updates)
+                
+                return {
+                    "session_initialized": True,
+                    "user_identity": user_identity,
+                    "context_type": context_type,
+                    "persona_found": user_profile is not None,
+                    "persona_summary": self._format_persona_summary(user_profile) if user_profile else "New user - no previous interactions",
+                    "interaction_history": {
+                        "previous_conversations": len(recent_conversations),
+                        "last_interaction": recent_conversations[0].get("timestamp") if recent_conversations else None,
+                        "conversation_topics": list(set([conv.get("context", {}).get("topic", "general") for conv in recent_conversations[:3]]))
+                    },
+                    "relevant_memories": len(memory_search_results),
+                    "learned_content_available": len(relevant_chunks),
+                    "interaction_summary": interaction_summary,
+                    "ready_for_conversation": True,
+                    "session_context": "persona_and_history_loaded"
+                }
+                
+            except Exception as e:
+                logger.error(f"Session initialization error: {str(e)}")
+                return {
+                    "session_initialized": False,
+                    "error": str(e),
+                    "fallback_mode": "basic_conversation_mode"
+                }
+        
 
         @self.mcp.tool()
         async def memory_stats() -> dict:
@@ -350,7 +515,45 @@ class BrainInterface:
                     "storage_type": "unknown"
                 }
 
-        logger.info("🧠 Brain Interface: Registered 8 human-inspired cognitive tools")
+        logger.info("🧠 Brain Interface: Registered 9 human-inspired cognitive tools")
+
+    async def _generate_interaction_summary(self, user_profile, recent_conversations, memory_results, learning_chunks) -> str:
+        """Generate a summary of previous interactions and relevant context"""
+        summary_parts = []
+        
+        if user_profile:
+            summary_parts.append(
+                f"User Profile: {user_profile.get('name', 'Unknown')} - {user_profile.get('description', 'No description')}"
+            )
+        
+        if recent_conversations:
+            recent_topics = [conv.get("user_message", "")[:100] for conv in recent_conversations[:3]]
+            summary_parts.append(f"Recent topics discussed: {'; '.join(recent_topics)}")
+        
+        if memory_results:
+            key_memories = [mem.get("value", "")[:100] for mem in memory_results[:2]]
+            summary_parts.append(f"Key memories: {'; '.join(key_memories)}")
+        
+        if learning_chunks:
+            learning_topics = [chunk.get("context_type", "") for chunk in learning_chunks]
+            summary_parts.append(f"Relevant learning: {', '.join(set(learning_topics))}")
+        
+        return " | ".join(summary_parts) if summary_parts else "Starting fresh conversation"
+
+    def _format_persona_summary(self, profile) -> str:
+        """Format user persona summary"""
+        if not profile:
+            return "No persona data available"
+        
+        parts = []
+        if profile.get("name"):
+            parts.append(f"Name: {profile['name']}")
+        if profile.get("total_interactions", 0) > 0:
+            parts.append(f"Interactions: {profile['total_interactions']}")
+        if profile.get("description"):
+            parts.append(f"About: {profile['description']}")
+            
+        return " | ".join(parts)
 
     def get_tool_info(self) -> Dict[str, str]:
         """Get information about available brain tools"""
@@ -360,7 +563,8 @@ class BrainInterface:
             "recall": "🔍 Recall memories and past experiences", 
             "reflect": "🤔 Engage in self-reflection and metacognition",
             "consciousness_check": "🧘 Check current state of consciousness",
-            "learn_from": "📚 Learn from new experiences and information",
+            "learn_from": "📚 Learn from documents, websites, or experiences with intelligent processing",
+            "initialize_chat_session": "🚀 Initialize chat session with persona and interaction history",
             "dream": "💤 Background processing and memory consolidation",
             "memory_stats": "📊 Check memory database statistics and health"
         }

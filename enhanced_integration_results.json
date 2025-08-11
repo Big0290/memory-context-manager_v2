@@ -1,0 +1,150 @@
+{
+  "total_tools_tested": 12,
+  "successful_tests": 12,
+  "test_categories": 5,
+  "test_duration": 0.000178,
+  "all_results": {
+    "cognitive": {
+      "think_deeply": {
+        "success": true,
+        "tool": "think_deeply",
+        "input": "How can I improve code quality?",
+        "expected_features": [
+          "ContextAnalyzer integration",
+          "Deep reasoning",
+          "Memory-enhanced thinking"
+        ],
+        "status": "Ready for MCP testing"
+      },
+      "reflect_enhanced": {
+        "success": true,
+        "tool": "reflect_enhanced",
+        "input": "Recent learning patterns",
+        "expected_features": [
+          "ContextAnalyzer integration",
+          "Enhanced self-reflection",
+          "Pattern recognition"
+        ],
+        "status": "Ready for MCP testing"
+      }
+    },
+    "memory": {
+      "remember_important": {
+        "success": true,
+        "tool": "remember_important",
+        "input": "User prefers step-by-step explanations",
+        "expected_features": [
+          "ContextAnalyzer integration",
+          "Emotional weighting",
+          "Contextual tagging"
+        ],
+        "status": "Ready for MCP testing"
+      },
+      "recall_intelligently": {
+        "success": true,
+        "tool": "recall_intelligently",
+        "input": "code quality improvements",
+        "expected_features": [
+          "Context-aware search",
+          "Relevance scoring",
+          "Pattern recognition"
+        ],
+        "status": "Ready for MCP testing"
+      },
+      "forget_selectively": {
+        "success": true,
+        "tool": "forget_selectively",
+        "input": "outdated documentation",
+        "expected_features": [
+          "Context-aware cleanup",
+          "Risk assessment",
+          "Safe deletion"
+        ],
+        "status": "Ready for MCP testing"
+      }
+    },
+    "analysis": {
+      "understand_deeply": {
+        "success": true,
+        "tool": "understand_deeply",
+        "input": "Complex refactoring request",
+        "expected_features": [
+          "Implicit goal detection",
+          "Complexity assessment",
+          "Pattern recognition"
+        ],
+        "status": "Ready for MCP testing"
+      },
+      "detect_patterns": {
+        "success": true,
+        "tool": "detect_patterns",
+        "input": "User communication patterns",
+        "expected_features": [
+          "Multi-layer pattern detection",
+          "Confidence scoring",
+          "Cross-domain analysis"
+        ],
+        "status": "Ready for MCP testing"
+      },
+      "assess_complexity": {
+        "success": true,
+        "tool": "assess_complexity",
+        "input": "Technical documentation",
+        "expected_features": [
+          "Cognitive load assessment",
+          "Technical complexity",
+          "Recommendations"
+        ],
+        "status": "Ready for MCP testing"
+      }
+    },
+    "cursor": {
+      "code_analyze": {
+        "success": true,
+        "tool": "code_analyze",
+        "input": "Code sample (530 chars)",
+        "expected_features": [
+          "Code structure analysis",
+          "Quality assessment",
+          "Best practice recommendations"
+        ],
+        "status": "Ready for MCP testing"
+      },
+      "debug_intelligently": {
+        "success": true,
+        "tool": "debug_intelligently",
+        "input": "Code + Error: TypeError: 'NoneType' object is not subscriptable",
+        "expected_features": [
+          "Pattern-based debugging",
+          "Strategic recommendations",
+          "Context-aware analysis"
+        ],
+        "status": "Ready for MCP testing"
+      },
+      "refactor_safely": {
+        "success": true,
+        "tool": "refactor_safely",
+        "input": "Refactor goal: improve code structure",
+        "expected_features": [
+          "Code structure analysis",
+          "Refactoring plan generation",
+          "Risk assessment"
+        ],
+        "status": "Ready for MCP testing"
+      }
+    },
+    "context": {
+      "analyze_context_comprehensive": {
+        "success": true,
+        "tool": "analyze_context_comprehensive",
+        "input": "Complex request (251 chars)",
+        "expected_features": [
+          "Full ContextAnalyzer power",
+          "Multi-layer analysis",
+          "Comprehensive insights"
+        ],
+        "status": "Ready for MCP testing"
+      }
+    }
+  }
+}

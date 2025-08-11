@@ -11,7 +11,7 @@ import asyncio
 
 # Add the plugin package to the path
 plugin_path = Path(__file__).parent / "cognitive_brain_plugin"
-sys.path.insert(0, str(plugin_path.parent))
+sys.path.insert(0, str(plugin_path))
 
 # Import the plugin interface from src
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -51,7 +51,7 @@ class CognitiveBrainPlugin(BasePlugin):
             logger.info("Setting up Cognitive Brain Plugin...")
             
             # Import brain components
-            from cognitive_brain_plugin.integration.brain_plugin_integration import BrainPluginIntegration
+            from .cognitive_brain_plugin.integration.brain_plugin_integration import BrainPluginIntegration
             
             # Initialize brain integration
             storage_dir = self._config.get("storage_dir", "brain_memory_store")

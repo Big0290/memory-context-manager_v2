@@ -259,6 +259,7 @@ class CognitiveBrain:
             from ..modules.router import Router
             from ..modules.self_reflector import SelfReflector
             from ..modules.sync_bridge import SyncBridge
+            from ..modules.context_analyzer import ContextAnalyzer
             
             # Register modules
             self.register_module(FrontalModule(self.storage))
@@ -267,6 +268,7 @@ class CognitiveBrain:
             self.register_module(Router(self.storage))
             self.register_module(SelfReflector(self.storage))
             self.register_module(SyncBridge(self.storage))
+            self.register_module(ContextAnalyzer(self.storage))
             
             self._log_thought("All modules registered successfully")
             self._save_state()

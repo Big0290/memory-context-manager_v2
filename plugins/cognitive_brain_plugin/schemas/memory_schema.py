@@ -112,8 +112,9 @@ class BrainState(BaseModel):
     
     # Activity levels (0.0 to 1.0)
     frontal_activity: float = Field(default=0.5, ge=0.0, le=1.0)
-    memory_activity: float = Field(default=0.5, ge=0.0, le=1.0)
+    memory_activity: float = Field(default=0.0, ge=0.0, le=1.0)
     emotion_activity: float = Field(default=0.5, ge=0.0, le=1.0)
+    context_activity: float = Field(default=0.5, ge=0.0, le=1.0)
     
     # System health
     last_reflection: Optional[datetime] = None

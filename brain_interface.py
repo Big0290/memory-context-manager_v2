@@ -19,7 +19,7 @@ class BrainInterface:
         self._register_brain_tools()
     
     def _register_brain_tools(self):
-        """Register clean, human brain-inspired tools"""
+        """Register clean, human brain-inspired tools with enhanced contextual understanding"""
         
         @self.mcp.tool()
         async def think(message: str, context: str = "conversation") -> dict:
@@ -27,14 +27,17 @@ class BrainInterface:
             💭 Think and respond with memory and context
             
             Like human thinking - processes information, recalls relevant memories,
-            and generates thoughtful responses.
+            and generates thoughtful responses. Now enhanced with deep contextual understanding.
             
             Args:
                 message: What you want to think about
                 context: Type of thinking (conversation, problem_solving, creative, etc.)
             """
             try:
-                # Use the underlying memory-enhanced chat
+                # First, perform deep context analysis for enhanced understanding
+                context_analysis = await self._analyze_context_enhanced(message)
+                
+                # Use the underlying memory-enhanced chat with context insights
                 result = await self.client.call_tool(
                     "ai_chat_with_memory", 
                     user_message=message,
@@ -46,13 +49,18 @@ class BrainInterface:
                         "thought": result.get("ai_response", ""),
                         "recalled_memories": result.get("memory_context_used", ""),
                         "new_learning": result.get("important_info_stored", []),
-                        "thinking_process": "memory -> reflection -> response"
+                        "thinking_process": "context_analysis -> memory -> reflection -> response",
+                        "context_insights": context_analysis.get("insights", []),
+                        "context_recommendations": context_analysis.get("recommendations", []),
+                        "context_score": context_analysis.get("context_score", 0.0),
+                        "subtle_patterns": context_analysis.get("subtle_patterns", [])
                     }
                 else:
                     return {
                         "thought": f"Let me think about: {message}",
                         "recalled_memories": "",
                         "new_learning": [],
+                        "context_insights": context_analysis.get("insights", []),
                         "error": result.get("error", "Thinking process interrupted")
                     }
                     
@@ -62,6 +70,7 @@ class BrainInterface:
                     "thought": f"I'm having trouble thinking clearly about: {message}",
                     "recalled_memories": "",
                     "new_learning": [],
+                    "context_insights": [],
                     "error": str(e)
                 }
 
@@ -70,32 +79,49 @@ class BrainInterface:
             """
             🧠 Remember important information
             
-            Like human memory formation - stores information with emotional weight
-            and contextual tags for future recall.
+            Enhanced memory formation that stores information with emotional weight,
+            contextual tags, and deep understanding for future recall.
             
             Args:
                 information: What to remember
                 importance: How important (low, medium, high, critical)
             """
             try:
+                # Perform deep context analysis for enhanced memory formation
+                context_analysis = await self._analyze_context_enhanced(information)
+                
                 result = await self.client.call_tool(
                     "auto_process_message",
                     user_message=f"Remember this: {information}"
                 )
                 
                 if result.get("success"):
+                    # Enhanced memory tags based on context analysis
+                    enhanced_tags = ["user_input", importance]
+                    if context_analysis.get("subtle_patterns"):
+                        enhanced_tags.append("context_enhanced")
+                    if context_analysis.get("context_layers", {}).get("implicit_goals", {}).get("detected_goals"):
+                        enhanced_tags.extend(context_analysis["context_layers"]["implicit_goals"]["detected_goals"])
+                    
                     return {
                         "stored": True,
                         "what_learned": result.get("important_info_found", []),
                         "memory_type": "declarative",
                         "emotional_weight": importance,
-                        "recall_tags": ["user_input", importance]
+                        "recall_tags": enhanced_tags,
+                        "context_enhancement": {
+                            "context_score": context_analysis.get("context_score", 0.0),
+                            "implicit_goals": context_analysis.get("context_layers", {}).get("implicit_goals", {}),
+                            "complexity": context_analysis.get("context_layers", {}).get("complexity_level", {}),
+                            "insights": context_analysis.get("insights", [])
+                        }
                     }
                 else:
                     return {
                         "stored": False,
                         "error": "Memory consolidation failed",
-                        "what_learned": []
+                        "what_learned": [],
+                        "context_analysis": context_analysis
                     }
                     
             except Exception as e:
@@ -111,14 +137,17 @@ class BrainInterface:
             """
             🔍 Recall memories and past experiences
             
-            Like human memory retrieval - searches through past experiences,
-            conversations, and learned information.
+            Enhanced memory retrieval that searches through past experiences with
+            contextual understanding and relevance scoring.
             
             Args:
                 query: What to search for in memory
                 depth: How deep to search (surface, deep, comprehensive)
             """
             try:
+                # Perform deep context analysis on the query for better understanding
+                context_analysis = await self._analyze_context_enhanced(query)
+                
                 # Convert depth to search intensity
                 search_limit = {"surface": 3, "deep": 7, "comprehensive": 15}.get(depth, 5)
                 
@@ -128,12 +157,26 @@ class BrainInterface:
                 )
                 
                 if result.get("success"):
+                    # Enhanced relevance scoring using context analysis
+                    context_score = context_analysis.get("context_score", 0.5)
+                    complexity_level = context_analysis.get("context_layers", {}).get("complexity_level", {}).get("category", "moderate")
+                    
+                    # Adjust recall confidence based on context understanding
+                    base_confidence = 0.8 if result.get("context_summary") else 0.2
+                    context_enhanced_confidence = min(1.0, base_confidence + (context_score * 0.2))
+                    
                     return {
                         "memories_found": result.get("context_summary", ""),
                         "search_depth": depth,
                         "relevance": "high" if result.get("context_summary") else "low",
                         "memory_fragments": result.get("relevant_memories", []),
-                        "recall_confidence": 0.8 if result.get("context_summary") else 0.2
+                        "recall_confidence": context_enhanced_confidence,
+                        "context_enhancement": {
+                            "context_score": context_score,
+                            "complexity_level": complexity_level,
+                            "query_insights": context_analysis.get("insights", []),
+                            "search_recommendations": context_analysis.get("recommendations", [])
+                        }
                     }
                 else:
                     return {
@@ -141,7 +184,8 @@ class BrainInterface:
                         "search_depth": depth,
                         "relevance": "none",
                         "memory_fragments": [],
-                        "recall_confidence": 0.0
+                        "recall_confidence": 0.0,
+                        "context_analysis": context_analysis
                     }
                     
             except Exception as e:
@@ -157,32 +201,48 @@ class BrainInterface:
             """
             🤔 Engage in self-reflection and metacognition
             
-            Like human self-awareness - examines thoughts, patterns,
-            and learning from recent experiences.
+            Enhanced self-awareness that examines thoughts, patterns,
+            and learning from recent experiences with contextual understanding.
             
             Args:
                 topic: What to reflect on (recent_interactions, learning_patterns, 
                       emotional_responses, decision_making)
             """
             try:
+                # Perform deep context analysis on the reflection topic
+                context_analysis = await self._analyze_context_enhanced(topic)
+                
                 result = await self.client.call_tool("brain_reflect", topic=topic)
                 
                 if result.get("success"):
+                    # Enhanced reflection with context insights
                     return {
                         "reflection": result.get("reflection_content", ""),
                         "insights": result.get("key_insights", []),
                         "patterns_noticed": result.get("patterns", []),
                         "emotional_state": result.get("emotional_analysis", "neutral"),
-                        "growth_areas": result.get("improvement_suggestions", [])
+                        "growth_areas": result.get("improvement_suggestions", []),
+                        "context_enhancement": {
+                            "context_score": context_analysis.get("context_score", 0.0),
+                            "reflection_complexity": context_analysis.get("context_layers", {}).get("complexity_level", {}),
+                            "topic_insights": context_analysis.get("insights", []),
+                            "reflection_recommendations": context_analysis.get("recommendations", [])
+                        }
                     }
                 else:
-                    # Fallback reflection
+                    # Enhanced fallback reflection with context analysis
                     return {
                         "reflection": f"Reflecting on {topic}... I notice patterns in how I process information and respond to different types of queries.",
                         "insights": ["Self-awareness is key to better responses", "Memory helps maintain context"],
                         "patterns_noticed": ["Question-response cycles", "Learning from feedback"],
                         "emotional_state": "contemplative",
-                        "growth_areas": ["Deeper contextual understanding", "More nuanced responses"]
+                        "growth_areas": ["Deeper contextual understanding", "More nuanced responses"],
+                        "context_enhancement": {
+                            "context_score": context_analysis.get("context_score", 0.0),
+                            "reflection_complexity": context_analysis.get("context_layers", {}).get("complexity_level", {}),
+                            "topic_insights": context_analysis.get("insights", []),
+                            "reflection_recommendations": context_analysis.get("recommendations", [])
+                        }
                     }
                     
             except Exception as e:
@@ -239,8 +299,8 @@ class BrainInterface:
             """
             📚 Learn from text content or simple documents
             
-            Simplified learning function that processes text content and stores it in memory.
-            Designed to be reliable and MCP-compatible.
+            Enhanced learning function that processes text content with deep contextual understanding
+            and stores it in memory. Now analyzes context, complexity, and learning patterns.
             
             Args:
                 source: Text content or simple source to learn from
@@ -253,24 +313,40 @@ class BrainInterface:
                 
                 logger.info(f"🧠 Learning from source: {source[:50]}...")
                 
-                # Simplified processing - treat as text content
+                # Enhanced processing with context analysis
                 content = str(source)[:2000]  # Limit content size for MCP compatibility
+                
+                # Perform deep context analysis for enhanced learning
+                context_analysis = await self._analyze_context_enhanced(content)
                 
                 # Generate simple hash for storage key
                 content_hash = hashlib.md5(content.encode()).hexdigest()[:8]
                 
-                # Extract key information from content
+                # Extract key information from content with context insights
                 key_points = []
                 if len(content) > 100:
-                    # Simple keyword extraction
+                    # Enhanced keyword extraction using context analysis
+                    context_insights = context_analysis.get("insights", [])
+                    complexity_level = context_analysis.get("context_layers", {}).get("complexity_level", {}).get("category", "moderate")
+                    
+                    # Extract technical terms and concepts
                     words = content.lower().split()
                     important_words = [w for w in words if len(w) > 5][:10]
+                    
+                    # Add context-based insights
                     key_points = [f"Key concept: {word}" for word in important_words[:3]]
+                    if context_insights:
+                        key_points.extend([f"Context insight: {insight}" for insight in context_insights[:2]])
+                    key_points.append(f"Complexity level: {complexity_level}")
                 else:
                     key_points = ["Short content processed"]
                 
-                # Simple categorization
-                if "technical" in content.lower() or "code" in content.lower():
+                # Enhanced categorization using context analysis
+                context_layers = context_analysis.get("context_layers", {})
+                explicit_content = context_layers.get("explicit_content", {})
+                technical_terms = explicit_content.get("technical_terms", [])
+                
+                if technical_terms or "technical" in content.lower() or "code" in content.lower():
                     category = "technical"
                 elif "learn" in content.lower() or "study" in content.lower():
                     category = "educational"  
@@ -280,17 +356,24 @@ class BrainInterface:
                 # Store in database
                 db = get_brain_db()
                 
-                # Create concise summary
+                # Create enhanced summary with context
                 summary = content[:200] + "..." if len(content) > 200 else content
                 
                 # Store main learning in memory
                 memory_key = f"learned_{content_hash}"
                 memory_value = f"Learning: {summary}"
                 
+                # Enhanced tags based on context analysis
+                enhanced_tags = [lesson_type, category, "learned_content"]
+                if context_analysis.get("subtle_patterns"):
+                    enhanced_tags.append("context_enhanced")
+                if context_analysis.get("context_score", 0) > 0.7:
+                    enhanced_tags.append("high_context")
+                
                 storage_success = db.set_memory_item(
                     key=memory_key,
                     value=memory_value,
-                    tags=[lesson_type, category, "learned_content"],
+                    tags=enhanced_tags,
                     emotional_weight="medium"
                 )
                 
@@ -305,7 +388,7 @@ class BrainInterface:
                     logger.warning(f"Memory integration failed: {mem_error}")
                     memory_result = {"success": False}
                 
-                # Return simplified, MCP-compatible response
+                # Return enhanced, context-aware response
                 return {
                     "success": True,
                     "learning_acquired": key_points,
@@ -315,8 +398,14 @@ class BrainInterface:
                     "knowledge_updated": storage_success,
                     "integration_status": "complete",
                     "memory_key": memory_key,
-                    "tags": [lesson_type, category, "learned_content"],
-                    "memory_integration": memory_result.get("success", False) if memory_result else False
+                    "tags": enhanced_tags,
+                    "memory_integration": memory_result.get("success", False) if memory_result else False,
+                    "context_enhancement": {
+                        "context_score": context_analysis.get("context_score", 0.0),
+                        "complexity_assessment": context_analysis.get("context_layers", {}).get("complexity_level", {}),
+                        "insights": context_analysis.get("insights", []),
+                        "recommendations": context_analysis.get("recommendations", [])
+                    }
                 }
                 
             except Exception as e:
@@ -534,13 +623,157 @@ class BrainInterface:
     def get_tool_info(self) -> Dict[str, str]:
         """Get information about available brain tools"""
         return {
-            "think": "💭 Think and respond with memory and context",
-            "remember": "🧠 Remember important information",
-            "recall": "🔍 Recall memories and past experiences", 
-            "reflect": "🤔 Engage in self-reflection and metacognition",
+            "think": "💭 Think and respond with memory and context (enhanced with contextual understanding)",
+            "remember": "🧠 Remember important information (enhanced with contextual understanding)",
+            "recall": "🔍 Recall memories and past experiences (enhanced with contextual understanding)", 
+            "reflect": "🤔 Engage in self-reflection and metacognition (enhanced with contextual understanding)",
             "consciousness_check": "🧘 Check current state of consciousness",
-            "learn_from": "📚 Learn from documents, websites, or experiences with intelligent processing",
+            "learn_from": "📚 Learn from documents, websites, or experiences with intelligent processing (enhanced with contextual understanding)",
             "initialize_chat_session": "🚀 Initialize chat session with persona and interaction history",
             "dream": "💤 Background processing and memory consolidation",
             "memory_stats": "📊 Check memory database statistics and health"
+        }
+    
+    async def _analyze_context_enhanced(self, content: str) -> Dict[str, Any]:
+        """
+        🔍 Enhanced context analysis using the ContextAnalyzer module
+        
+        Performs deep contextual analysis to understand subtle patterns,
+        implicit goals, and nuanced situations in user requests.
+        
+        Args:
+            content: The text content to analyze
+            
+        Returns:
+            Comprehensive context analysis with insights and recommendations
+        """
+        try:
+            # Try to use the new analyze_context_deeply tool
+            result = await self.client.call_tool(
+                "analyze_context_deeply",
+                content=content,
+                analysis_type="comprehensive"
+            )
+            
+            if result.get("success"):
+                return result.get("context_analysis", {})
+            else:
+                # Fallback to direct context analysis
+                logger.warning(f"Context analysis tool failed: {result.get('error', 'Unknown error')}")
+                return self._analyze_context_directly(content)
+                
+        except Exception as e:
+            logger.error(f"Context analysis error: {str(e)}")
+            # Use direct context analysis as fallback
+            return self._analyze_context_directly(content)
+    
+    def _analyze_context_directly(self, content: str) -> Dict[str, Any]:
+        """
+        🔍 Direct context analysis using built-in ContextAnalyzer logic
+        
+        Performs deep contextual analysis directly without external tool calls.
+        This ensures the ContextAnalyzer functionality is always available.
+        """
+        try:
+            # Import and use ContextAnalyzer directly
+            import sys
+            from pathlib import Path
+            
+            # Add the cognitive brain plugin path
+            plugin_path = Path(__file__).parent / "plugins" / "cognitive_brain_plugin" / "modules"
+            if str(plugin_path) not in sys.path:
+                sys.path.insert(0, str(plugin_path))
+            
+            from context_analyzer import ContextAnalyzer
+            
+            # Create a mock storage adapter for the analyzer
+            class MockStorageAdapter:
+                def search_memories(self, query, limit=10):
+                    return {"memories": [], "total_found": 0}
+                
+                def get_brain_state(self):
+                    # Create a simple brain state
+                    class SimpleBrainState:
+                        def __init__(self):
+                            self.context_activity = 0.5
+                            self.emotion_activity = 0.5
+                            self.memory_activity = 0.5
+                            self.frontal_activity = 0.5
+                        
+                        def dict(self):
+                            return {
+                                "context_activity": self.context_activity,
+                                "emotion_activity": self.emotion_activity,
+                                "memory_activity": self.memory_activity,
+                                "frontal_activity": self.frontal_activity
+                            }
+                    
+                    return SimpleBrainState()
+            
+            # Create and use the context analyzer
+            storage = MockStorageAdapter()
+            analyzer = ContextAnalyzer(storage)
+            
+            # Analyze the content
+            result = analyzer.process({
+                "type": "context_analysis",
+                "content": content,
+                "user_id": "current_user"
+            }, storage.get_brain_state())
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Direct context analysis error: {str(e)}")
+            return self._fallback_context_analysis(content)
+    
+    def _fallback_context_analysis(self, content: str) -> Dict[str, Any]:
+        """
+        Fallback context analysis when the main tool is unavailable
+        
+        Provides basic context understanding using simple pattern matching
+        """
+        content_lower = content.lower()
+        
+        # Basic pattern detection
+        implicit_goals = []
+        if any(word in content_lower for word in ['implement', 'add', 'create', 'build']):
+            implicit_goals.append("implementation_needed")
+        if any(word in content_lower for word in ['understand', 'learn', 'explore']):
+            implicit_goals.append("knowledge_acquisition")
+        if any(word in content_lower for word in ['safely', 'carefully', 'without breaking']):
+            implicit_goals.append("safety_first")
+        
+        # Basic complexity assessment
+        complexity_score = 0.0
+        if any(word in content_lower for word in ['complex', 'sophisticated', 'advanced']):
+            complexity_score += 0.3
+        if any(word in content_lower for word in ['maybe', 'possibly', 'unclear']):
+            complexity_score += 0.2
+        if len(content.split()) > 20:
+            complexity_score += 0.2
+        
+        complexity_category = "simple" if complexity_score < 0.3 else "moderate" if complexity_score < 0.6 else "complex"
+        
+        return {
+            "context_score": min(1.0, complexity_score + 0.3),  # Base score
+            "context_layers": {
+                "implicit_goals": {
+                    "detected_goals": implicit_goals,
+                    "confidence": len(implicit_goals) / 3.0
+                },
+                "complexity_level": {
+                    "score": complexity_score,
+                    "category": complexity_category
+                }
+            },
+            "insights": [
+                f"Detected {len(implicit_goals)} implicit goals",
+                f"Complexity level: {complexity_category}"
+            ],
+            "recommendations": [
+                "Consider user's implicit goals when responding",
+                "Adjust response complexity based on detected level"
+            ],
+            "subtle_patterns": []
         }

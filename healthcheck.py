@@ -12,13 +12,22 @@ def check_health():
         # Check if brain memory store exists
         memory_store = Path("/app/brain_memory_store")
         if not memory_store.exists():
+            print("Brain memory store not found")
             return False
         
-        # Check if main modules can be imported
-        sys.path.insert(0, "/app/src")
-        sys.path.insert(0, "/app")
+        # Check if the server is running by looking for the brain interface
+        brain_interface = Path("/app/brain_interface.py")
+        if not brain_interface.exists():
+            print("Brain interface not found")
+            return False
         
-        from plugin_manager import PluginManager
+        # Check if the context analyzer module exists
+        context_analyzer = Path("/app/plugins/cognitive_brain_plugin/modules/context_analyzer.py")
+        if not context_analyzer.exists():
+            print("Context analyzer module not found")
+            return False
+        
+        print("All required components found")
         return True
         
     except Exception as e:

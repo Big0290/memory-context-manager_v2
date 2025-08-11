@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import asyncio
 from typing import Dict, Any
+from datetime import datetime
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
@@ -23,6 +24,9 @@ mcp = FastMCP("Memory Context Manager with AI Memory")
 
 # Initialize plugin manager
 plugin_manager = PluginManager(["plugins"])
+
+# Initialize new tool registry
+from tool_registry import get_tool_registry
 
 # Memory client for internal tool calls
 class MCPClient:
@@ -96,6 +100,13 @@ def initialize_server():
     # Create internal MCP client
     mcp_client = MCPClient(plugin_manager.registry)
     
+    # Initialize new tool registry
+    tool_registry = get_tool_registry(mcp)
+    
+    # Initialize enhanced brain tools with new registry
+    from enhanced_brain_tools_simple import EnhancedBrainTools
+    enhanced_brain_tools = EnhancedBrainTools(mcp_client, tool_registry)
+    
     # Initialize clean brain interface (replaces technical tools)
     brain = BrainInterface(mcp, mcp_client)
     
@@ -118,8 +129,36 @@ def initialize_server():
         mcp.prompt(name=prompt_name, description=prompt_def.description)(prompt_def.handler)
         logger.info(f"Registered prompt: {prompt_name}")
     
+    # Get tool information from new registry
+    tool_info = tool_registry.get_tool_info()
+    
+    # 🔧 ENHANCED TOOLS ALREADY REGISTERED WITH MCP SERVER
+    logger.info("🔧 Enhanced tools are already registered with MCP server via ToolRegistry")
+    
+    # Get all tools from the enhanced registry to show what's available
+    try:
+        logger.info("🔍 Attempting to get enhanced tools from registry...")
+        all_enhanced_tools = tool_registry.get_all_tools()
+        logger.info(f"🔍 Successfully retrieved {len(all_enhanced_tools)} tools from registry")
+        
+        # Debug: Check what's in the tool registry
+        logger.info(f"🔍 Tool registry contents: {list(tool_registry.registered_tools.keys())}")
+        logger.info(f"🔍 Total enhanced tools available: {len(all_enhanced_tools)}")
+        
+        # List all available enhanced tools
+        for tool_name in all_enhanced_tools.keys():
+            logger.info(f"✅ Enhanced tool available: {tool_name}")
+            
+    except Exception as e:
+        logger.error(f"❌ Error getting enhanced tools: {str(e)}")
+        logger.error(f"❌ Tool registry type: {type(tool_registry)}")
+        logger.error(f"❌ Tool registry has get_all_tools: {hasattr(tool_registry, 'get_all_tools')}")
+        all_enhanced_tools = {}
+    
     logger.info(f"🧠 Brain Interface ready with {len(brain.get_tool_info())} cognitive functions")
+    logger.info(f"🎯 Enhanced Tool Registry: {tool_info['total_tools']} tools organized in {len(tool_info['categories'])} categories")
     logger.info(f"🔌 Loaded {len(plugin_manager.registry.plugins)} plugins in background")
+    logger.info(f"🚀 Total MCP tools available: {len(all_enhanced_tools)} enhanced tools + core tools")
 
 # Brain status and info tools
 @mcp.tool()
@@ -695,6 +734,84 @@ async def get_comprehensive_system_status() -> dict:
             "success": False,
             "error": str(e),
             "system_status": "error"
+        }
+
+@mcp.tool()
+@log_mcp_tool
+async def analyze_context_deeply(content: str, analysis_type: str = "comprehensive") -> dict:
+    """
+    🧠 Analyze content with enhanced contextual understanding
+    
+    Uses the new ContextAnalyzer module to detect subtle patterns, 
+    implicit goals, and nuanced situations in user requests.
+    
+    Args:
+        content: The text content to analyze
+        analysis_type: Type of analysis (comprehensive, subtlety, depth, goals, complexity)
+    
+    Returns:
+        Detailed context analysis with insights and recommendations
+    """
+    try:
+        logger.info(f"🧠 Performing deep context analysis: {analysis_type}")
+        
+        # Check if brain interface is available
+        if not brain:
+            return {
+                "success": False,
+                "error": "Brain interface not available",
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        # Prepare input for context analysis
+        input_data = {
+            "type": f"context_{analysis_type}_analysis" if analysis_type != "comprehensive" else "context_analysis",
+            "content": content,
+            "user_id": "current_user",
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        # Get brain state for context
+        brain_state = brain.get_brain_state()
+        
+        # Process through brain system
+        result = brain.process_input(input_data)
+        
+        # Extract context analysis results
+        context_results = {}
+        if "context_analyzer" in result:
+            context_results = result["context_analyzer"]
+        elif "modules" in result:
+            # Look for context analyzer in modules
+            for module_name, module_result in result["modules"].items():
+                if "context_analyzer" in module_name.lower():
+                    context_results = module_result
+                    break
+        
+        if not context_results:
+            # Fallback: try to get basic analysis
+            context_results = {
+                "context_score": 0.5,
+                "insights": ["Basic context analysis available"],
+                "recommendations": ["Enable full context analyzer for detailed insights"]
+            }
+        
+        return {
+            "success": True,
+            "analysis_type": analysis_type,
+            "content_analyzed": content[:100] + "..." if len(content) > 100 else content,
+            "context_analysis": context_results,
+            "brain_state": brain_state,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in deep context analysis: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "analysis_type": analysis_type,
+            "timestamp": datetime.now().isoformat()
         }
 
 if __name__ == "__main__":

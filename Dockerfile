@@ -15,14 +15,14 @@ COPY pyproject.toml uv.lock* ./
 # Install uv for fast Python package management
 RUN pip install uv
 
-# Install Python dependencies
-RUN uv sync --frozen
-
 # Copy application code
 COPY . .
 
 # Create necessary directories
 RUN mkdir -p /app/brain_memory_store /app/logs /app/database
+
+# Install Python dependencies in container
+RUN uv sync --frozen
 
 # Set environment variables
 ENV PYTHONPATH=/app/src:/app

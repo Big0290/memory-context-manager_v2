@@ -1,18 +1,15 @@
 {
   "mcpServers": {
-    "memory-context-manager-v2": {
-      "command": "docker",
+    "memory-context-manager": {
+      "command": "uv",
       "args": [
         "run",
-        "-i",
-        "--rm",
-        "memory-context-manager-v2:latest",
         "python",
         "main.py"
       ],
+      "cwd": "/Users/jonathanmorand/Documents/ProjectsFolder/MCP_FOLDER/memmory-context-manager/memory-context-manager_v2",
       "env": {
-        "MCP_LOG_LEVEL": "INFO",
-        "OLLAMA_BASE_URL": "http://host.docker.internal:11434"
+        "PYTHONPATH": "/Users/jonathanmorand/Documents/ProjectsFolder/MCP_FOLDER/memmory-context-manager/memory-context-manager_v2"
       }
     }
   }

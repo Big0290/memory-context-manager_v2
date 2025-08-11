@@ -6,11 +6,14 @@
         "run",
         "-i",
         "--rm",
-        "memory-context-manager-v2:latest",
-        "python",
-        "main.py"
+        "-v",
+        "${workspaceFolder}:/workspace",
+        "-w",
+        "/workspace",
+        "memory-context-manager-v2:latest"
       ],
       "env": {
+        "PYTHONPATH": "/workspace",
         "MCP_LOG_LEVEL": "INFO",
         "OLLAMA_BASE_URL": "http://host.docker.internal:11434"
       }

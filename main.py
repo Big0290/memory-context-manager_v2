@@ -90,6 +90,9 @@ phase3_personalization = None
 phase4_orchestrator = None
 phase5_ai = None
 
+# Global state for evolution engine
+global_state = type('GlobalState', (), {})()
+
 def initialize_server():
     """Initialize server with clean brain interface"""
     global mcp_client
@@ -1433,8 +1436,8 @@ def perceive_and_analyze(
         try:
             project_root = kwargs.get('project_root', '/app')  # Default to Docker path
             ingestion_result = phase2_knowledge.ingest_project_documentation(project_root)
-        return {
-            "success": True,
+            return {
+                "success": True,
                 "phase": 2,
                 "system": "Knowledge Ingestion Engine",
                 "result": ingestion_result,
@@ -1461,7 +1464,7 @@ def perceive_and_analyze(
                 "result": orchestration_result,
                 "message": "Context orchestration completed successfully"
             }
-    except Exception as e:
+        except Exception as e:
             return {"error": f"Context orchestration failed: {str(e)}", "phase": 4}
     
     elif action == "ai_integration":
@@ -1470,18 +1473,59 @@ def perceive_and_analyze(
             return {"error": "AI Integration Engine not available", "phase": 5}
         
         try:
-            integration_data = kwargs.get('integration_data', {})
-            if not integration_data:
-                return {"error": "No integration data provided", "phase": 5}
+            integration_type = kwargs.get('type', 'context_orchestration')
             
-            integration_result = phase5_ai.integrate_with_context_orchestrator(integration_data)
-        return {
-                "success": True,
-                "phase": 5,
-                "system": "AI Integration Engine",
-                "result": integration_result,
-                "message": "AI integration completed successfully"
-            }
+            if integration_type == 'context_orchestration':
+                # Integrate with context orchestrator
+                orchestrator_data = kwargs.get('orchestrator_data', {})
+                if not orchestrator_data:
+                    return {"error": "No orchestrator data provided", "phase": 5}
+                
+                integration_result = phase5_ai.integrate_with_context_orchestrator(orchestrator_data)
+                return {
+                    "success": True,
+                    "phase": 5,
+                    "system": "AI Integration Engine",
+                    "action": "context_orchestration",
+                    "result": integration_result,
+                    "message": "AI integration with context orchestrator completed"
+                }
+            
+            elif integration_type == 'development_session':
+                # Learn from development session
+                session_data = kwargs.get('session_data', {})
+                if not session_data:
+                    return {"error": "No session data provided", "phase": 5}
+                
+                learning_result = phase5_ai.learn_from_development_session(session_data)
+                return {
+                    "success": True,
+                    "phase": 5,
+                    "system": "AI Integration Engine",
+                    "action": "development_session",
+                    "result": learning_result,
+                    "message": "AI learning from development session completed"
+                }
+            
+            elif integration_type == 'ai_decision':
+                # Make AI decision
+                decision_context = kwargs.get('decision_context', {})
+                if not decision_context:
+                    return {"error": "No decision context provided", "phase": 5}
+                
+                decision_result = phase5_ai.make_ai_decision(decision_context)
+                return {
+                    "success": True,
+                    "phase": 5,
+                    "system": "AI Integration Engine",
+                    "action": "ai_decision",
+                    "result": decision_result,
+                    "message": "AI decision made successfully"
+                }
+            
+            else:
+                return {"error": f"Unknown AI integration type: {integration_type}", "phase": 5}
+                
         except Exception as e:
             return {"error": f"AI integration failed: {str(e)}", "phase": 5}
     
@@ -1641,8 +1685,8 @@ def processing_and_thinking(
                     return {"error": "No orchestrator data provided", "phase": 5}
                 
                 integration_result = phase5_ai.integrate_with_context_orchestrator(orchestrator_data)
-        return {
-            "success": True,
+                return {
+                    "success": True,
                     "phase": 5,
                     "system": "AI Integration Engine",
                     "action": "context_orchestration",
@@ -1657,7 +1701,7 @@ def processing_and_thinking(
                     return {"error": "No session data provided", "phase": 5}
                 
                 learning_result = phase5_ai.learn_from_development_session(session_data)
-        return {
+                return {
                     "success": True,
                     "phase": 5,
                     "system": "AI Integration Engine",
@@ -1751,8 +1795,8 @@ def learning_and_adaptation(
                     return {"error": "No session data provided for learning", "phase": 3}
                 
                 learning_result = phase3_personalization.learn_from_development_session(session_data)
-        return {
-            "success": True,
+                return {
+                    "success": True,
                     "phase": 3,
                     "system": "Personalization Engine",
                     "action": "learn_patterns",
@@ -1767,8 +1811,8 @@ def learning_and_adaptation(
                     return {"error": "No context data provided for suggestions", "phase": 3}
                 
                 suggestions = phase3_personalization.get_context_suggestions(context_data)
-        return {
-            "success": True,
+                return {
+                    "success": True,
                     "phase": 3,
                     "system": "Personalization Engine",
                     "action": "get_suggestions",
@@ -1779,7 +1823,7 @@ def learning_and_adaptation(
             else:
                 return {"error": f"Unknown personalization type: {personalization_type}", "phase": 3}
         
-    except Exception as e:
+        except Exception as e:
             return {"error": f"Personalization failed: {str(e)}", "phase": 3}
 
     else:
@@ -1841,14 +1885,14 @@ def output_and_action(
                 return {"error": "No context request provided", "phase": 4}
             
             orchestration_result = phase4_orchestrator.orchestrate_context(context_request)
-        return {
-            "success": True,
+            return {
+                "success": True,
                 "phase": 4,
                 "system": "Context Orchestrator",
                 "result": orchestration_result,
                 "message": "Context orchestration completed successfully"
             }
-    except Exception as e:
+        except Exception as e:
             return {"error": f"Context orchestration failed: {str(e)}", "phase": 4}
     
     else:
@@ -1926,7 +1970,7 @@ async def continuous_self_evolution(
                 global_state.evolution_engine = AutonomousEvolutionEngine()
             
             success = global_state.evolution_engine.start_evolution_system()
-        return {
+            return {
                 "success": success,
                 "message": "Evolution system started successfully" if success else "Failed to start evolution system",
                 "action": "start_evolution"
@@ -1941,8 +1985,8 @@ async def continuous_self_evolution(
                     "action": "stop_evolution"
                 }
             else:
-        return {
-            "success": False,
+                return {
+                    "success": False,
                     "message": "No evolution engine running",
                     "action": "stop_evolution"
                 }
@@ -2003,9 +2047,9 @@ async def continuous_self_evolution(
                 task_id = global_state.evolution_engine.schedule_evolution_task(task)
                 if task_id:
                     scheduled_tasks.append(task_id)
-        
-        return {
-            "success": True,
+            
+            return {
+                "success": True,
                 "message": f"Learning from {source} initiated successfully",
                 "action": "learn_from_documentation",
                 "tasks_scheduled": len(scheduled_tasks),
@@ -2017,8 +2061,8 @@ async def continuous_self_evolution(
         elif action == "learn_from":
             """Enhanced learning from any source with intelligent evolution strategy"""
             if not hasattr(global_state, 'evolution_engine') or not global_state.evolution_engine:
-        return {
-            "success": False,
+                return {
+                    "success": False,
                     "message": "Evolution system not running. Start it first with 'start_evolution'",
                     "action": "learn_from"
                 }
@@ -2040,9 +2084,9 @@ async def continuous_self_evolution(
                 task_id = global_state.evolution_engine.schedule_evolution_task(task)
                 if task_id:
                     scheduled_tasks.append(task_id)
-        
-        return {
-            "success": True,
+            
+            return {
+                "success": True,
                 "message": f"Learning from {source} initiated successfully",
                 "action": "learn_from",
                 "source": source,
@@ -2064,8 +2108,8 @@ async def continuous_self_evolution(
                     "status": status
                 }
             else:
-        return {
-            "success": False,
+                return {
+                    "success": False,
                     "message": "No evolution engine running",
                     "action": "get_evolution_status"
                 }
@@ -2120,11 +2164,11 @@ async def continuous_self_evolution(
                 }
         
         else:
-        return {
+            return {
                 "success": False,
                 "message": f"Unknown action: {action}. Available actions: start_evolution, stop_evolution, learn_from_documentation, get_evolution_status, schedule_evolution_task, get_evolution_metrics",
                 "action": action
-        }
+            }
         
     except Exception as e:
         logger.error(f"Error in continuous_self_evolution tool: {str(e)}")
@@ -2255,195 +2299,7 @@ def _analyze_learning_content(source: str, content: str, content_type: str, lear
     
     return evolution_strategy
 
-@mcp.tool()
-async def continuous_self_evolution(
-    action: str,
-    kwargs: Dict[str, Any] = None
-) -> Dict[str, Any]:
-    """Continuous Self-Evolution System - Phase 6 Feature 2
-    
-    Actions:
-    - start_evolution: Start the autonomous evolution system
-    - stop_evolution: Stop the autonomous evolution system
-    - learn_from_documentation: Learn from provided documentation
-    - get_evolution_status: Get comprehensive evolution status
-    - schedule_evolution_task: Schedule a specific evolution task
-    - get_evolution_metrics: Get evolution performance metrics
-    """
-    
-    try:
-        if action == "start_evolution":
-            if not hasattr(global_state, 'evolution_engine'):
-                from autonomous_evolution_engine import AutonomousEvolutionEngine
-                global_state.evolution_engine = AutonomousEvolutionEngine()
-            
-            success = global_state.evolution_engine.start_evolution_system()
-        return {
-                "success": success,
-                "message": "Evolution system started successfully" if success else "Failed to start evolution system",
-                "action": "start_evolution"
-            }
-            
-        elif action == "stop_evolution":
-            if hasattr(global_state, 'evolution_engine') and global_state.evolution_engine:
-                success = global_state.evolution_engine.stop_evolution_system()
-                return {
-                    "success": success,
-                    "message": "Evolution system stopped successfully" if success else "Failed to stop evolution system",
-                    "action": "stop_evolution"
-                }
-            else:
-                return {
-                    "success": False,
-                    "message": "No evolution engine running",
-                    "action": "stop_evolution"
-                }
-                
-        elif action == "learn_from_documentation":
-            if not hasattr(global_state, 'evolution_engine') or not global_state.evolution_engine:
-            return {
-                "success": False,
-                    "message": "Evolution system not running. Start it first with 'start_evolution'",
-                    "action": "learn_from_documentation"
-                }
-            
-            # Extract documentation data from kwargs
-            doc_data = kwargs or {}
-            source = doc_data.get('source', 'unknown_source')
-            content_type = doc_data.get('content_type', 'general_documentation')
-            priority = doc_data.get('priority', 'normal')
-            
-            # Schedule evolution tasks based on documentation learning
-            evolution_tasks = []
-            
-            if 'mcp' in source.lower() or 'cursor' in source.lower():
-                # MCP-specific learning tasks
-                evolution_tasks = [
-                    {
-                        'type': 'performance',
-                        'priority': 'high',
-                        'delay': 2,
-                        'description': f'Learn from {source}: Implement new transport methods'
-                    },
-                    {
-                        'type': 'intelligence',
-                        'priority': 'normal',
-                        'delay': 5,
-                        'description': f'Learn from {source}: Integrate authentication patterns'
-                    },
-                    {
-                        'type': 'adaptability',
-                        'priority': 'medium',
-                        'delay': 8,
-                        'description': f'Learn from {source}: Add new capabilities'
-                    }
-                ]
-            else:
-                # General documentation learning
-                evolution_tasks = [
-                    {
-                        'type': 'intelligence',
-                        'priority': priority,
-                        'delay': 2,
-                        'description': f'Learn from {source}: General knowledge integration'
-                    }
-                ]
-            
-            # Schedule the evolution tasks
-            scheduled_tasks = []
-            for task in evolution_tasks:
-                task_id = global_state.evolution_engine.schedule_evolution_task(task)
-                if task_id:
-                    scheduled_tasks.append(task_id)
-            
-            return {
-                "success": True,
-                "message": f"Learning from {source} initiated successfully",
-                "action": "learn_from_documentation",
-                "tasks_scheduled": len(scheduled_tasks),
-                "scheduled_task_ids": scheduled_tasks,
-                "learning_priority": priority,
-                "content_type": content_type
-            }
-            
-        elif action == "get_evolution_status":
-            if hasattr(global_state, 'evolution_engine') and global_state.evolution_engine:
-                status = global_state.evolution_engine.get_comprehensive_status()
-                return {
-                    "success": True,
-                    "action": "get_evolution_status",
-                    "status": status
-                }
-            else:
-            return {
-                "success": False,
-                    "message": "No evolution engine running",
-                    "action": "get_evolution_status"
-                }
-                
-        elif action == "schedule_evolution_task":
-            if not hasattr(global_state, 'evolution_engine') or not global_state.evolution_engine:
-                return {
-                    "success": False,
-                    "message": "Evolution system not running. Start it first with 'start_evolution'",
-                    "action": "schedule_evolution_task"
-                }
-            
-            task_data = kwargs or {}
-            task_id = global_state.evolution_engine.schedule_evolution_task(task_data)
-            
-            if task_id:
-        return {
-            "success": True,
-                    "message": "Evolution task scheduled successfully",
-                    "action": "schedule_evolution_task",
-                    "task_id": task_id,
-                    "task_data": task_data
-                }
-            else:
-                return {
-                    "success": False,
-                    "message": "Failed to schedule evolution task",
-                    "action": "schedule_evolution_task"
-                }
-                
-        elif action == "get_evolution_metrics":
-            if hasattr(global_state, 'evolution_engine') and global_state.evolution_engine:
-                metrics = global_state.evolution_engine.get_evolution_metrics()
-                scheduler_stats = global_state.evolution_engine.get_scheduler_stats()
-                
-                return {
-                    "success": True,
-                    "action": "get_evolution_metrics",
-                    "evolution_metrics": {
-                        "total_evolutions": metrics.total_evolutions,
-                        "successful_evolutions": metrics.successful_evolutions,
-                        "failed_evolutions": metrics.failed_evolutions,
-                        "evolution_success_rate": metrics.evolution_success_rate
-                    },
-                    "scheduler_stats": scheduler_stats
-                }
-            else:
-                return {
-                    "success": False,
-                    "message": "No evolution engine running",
-                    "action": "get_evolution_metrics"
-                }
-        
-        else:
-        return {
-                "success": False,
-                "message": f"Unknown action: {action}. Available actions: start_evolution, stop_evolution, learn_from_documentation, get_evolution_status, schedule_evolution_task, get_evolution_metrics",
-                "action": action
-        }
-        
-    except Exception as e:
-        logger.error(f"Error in continuous_self_evolution tool: {str(e)}")
-        return {
-            "success": False,
-            "message": f"Error: {str(e)}",
-            "action": action
-        }
+
 
 if __name__ == "__main__":
     logger.info("Starting Memory Context Manager with AI Memory Integration...")

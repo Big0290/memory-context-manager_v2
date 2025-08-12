@@ -1,0 +1,178 @@
+{
+  "preferences": {
+    "style_patterns": {
+      "total": 7,
+      "by_type": {
+        "naming": 4,
+        "structure": 3
+      },
+      "top_patterns": [
+        {
+          "pattern_type": "naming",
+          "pattern": "snake_case",
+          "confidence": 0.8,
+          "frequency": 1,
+          "examples": [
+            "def"
+          ],
+          "source_files": [
+            "sample.py"
+          ],
+          "created_at": 1754957807.472003,
+          "updated_at": 1754957807.472003,
+          "id": "naming_snake_case_544"
+        },
+        {
+          "pattern_type": "naming",
+          "pattern": "camel_case",
+          "confidence": 0.8,
+          "frequency": 1,
+          "examples": [
+            "def"
+          ],
+          "source_files": [
+            "sample.py"
+          ],
+          "created_at": 1754957807.4720058,
+          "updated_at": 1754957807.4720068,
+          "id": "naming_camel_case_544"
+        },
+        {
+          "pattern_type": "naming",
+          "pattern": "pascal_case",
+          "confidence": 0.8,
+          "frequency": 1,
+          "examples": [
+            "Calculate"
+          ],
+          "source_files": [
+            "sample.py"
+          ],
+          "created_at": 1754957807.472012,
+          "updated_at": 1754957807.472012,
+          "id": "naming_pascal_case_544"
+        },
+        {
+          "pattern_type": "naming",
+          "pattern": "kebab_case",
+          "confidence": 0.8,
+          "frequency": 1,
+          "examples": [
+            "def"
+          ],
+          "source_files": [
+            "sample.py"
+          ],
+          "created_at": 1754957807.472013,
+          "updated_at": 1754957807.472013,
+          "id": "naming_kebab_case_544"
+        },
+        {
+          "pattern_type": "structure",
+          "pattern": "class_organization",
+          "confidence": 0.7,
+          "frequency": 1,
+          "examples": [
+            "    def __init__(self):\n        self.items = []\n    \n    def add_item(self, item):\n        self.item..."
+          ],
+          "source_files": [
+            "sample.py"
+          ],
+          "created_at": 1754957807.472248,
+          "updated_at": 1754957807.472248,
+          "id": "structure_class_organization_544"
+        }
+      ]
+    },
+    "workflow_patterns": {
+      "total": 1,
+      "by_type": {
+        "feature_development": 1
+      },
+      "top_patterns": [
+        {
+          "pattern_type": "feature_development",
+          "sequence": [
+            "plan",
+            "code",
+            "test",
+            "refactor"
+          ],
+          "frequency": 1,
+          "success_rate": 1.0,
+          "time_spent": 120.0,
+          "context": {
+            "language": "python",
+            "complexity": "medium"
+          },
+          "created_at": 1754957807.472255,
+          "updated_at": 1754957807.472255,
+          "id": "workflow_feature_development_1754957807"
+        }
+      ]
+    },
+    "decision_patterns": {
+      "total": 1,
+      "by_type": {
+        "architecture": 1
+      },
+      "top_patterns": [
+        {
+          "decision_type": "architecture",
+          "choice": "class-based design",
+          "reasoning": "Better encapsulation and maintainability",
+          "alternatives": [
+            "functional",
+            "procedural"
+          ],
+          "frequency": 1,
+          "success_rate": 1.0,
+          "context": {
+            "language": "python",
+            "domain": "e-commerce"
+          },
+          "created_at": 1754957807.4722571,
+          "updated_at": 1754957807.472258,
+          "id": "decision_architecture_1754957807"
+        }
+      ]
+    },
+    "learning_patterns": {
+      "total": 1,
+      "by_type": {
+        "new_pattern": 1
+      },
+      "top_patterns": [
+        {
+          "learning_type": "new_pattern",
+          "approach": "tutorial + practice",
+          "effectiveness": 0.9,
+          "time_to_mastery": 60.0,
+          "resources_used": [
+            "docs.python.org",
+            "stackoverflow"
+          ],
+          "context": {
+            "topic": "python_classes",
+            "difficulty": "beginner"
+          },
+          "created_at": 1754957807.4722612,
+          "updated_at": 1754957807.4722612,
+          "id": "learning_new_pattern_1754957807"
+        }
+      ]
+    }
+  },
+  "behavior_injection": {
+    "total_injections": 1,
+    "strategy_distribution": {
+      "proactive": 1
+    },
+    "average_suggestions": 2.0,
+    "recent_injections": 1
+  },
+  "learning_history": {
+    "total_sessions": 1,
+    "recent_sessions": 1
+  }
+}

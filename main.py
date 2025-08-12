@@ -9,6 +9,13 @@ from datetime import datetime
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
+# Import our Phase 1-5 systems for integration
+from project_scanner import ProjectScanner
+from knowledge_ingestion_engine import KnowledgeIngestionEngine
+from personalization_engine import PersonalizationEngine
+from context_orchestrator import ContextOrchestrator
+from ai_integration_engine import AIIntegrationEngine
+
 from mcp.server.fastmcp import FastMCP
 from plugin_manager import PluginManager
 from brain_interface import BrainInterface
@@ -76,6 +83,13 @@ class MCPClient:
 # Global MCP client instance
 mcp_client = None
 
+# Global Phase 1-5 system instances
+phase1_scanner = None
+phase2_knowledge = None
+phase3_personalization = None
+phase4_orchestrator = None
+phase5_ai = None
+
 def initialize_server():
     """Initialize server with clean brain interface"""
     global mcp_client
@@ -121,6 +135,50 @@ def initialize_server():
     # Initialize clean brain interface (replaces technical tools)
     brain = BrainInterface(mcp, mcp_client)
     
+    # 🚀 Initialize Phase 1-5 systems for integration
+    logger.info("🚀 Initializing Phase 1-5 systems for integration...")
+    
+    try:
+        # Phase 1: Project Intelligence Layer
+        project_scanner = ProjectScanner("/app")  # Docker container path
+        logger.info("✅ Phase 1: Project Scanner initialized")
+        
+        # Phase 2: Knowledge Ingestion Engine
+        knowledge_engine = KnowledgeIngestionEngine()
+        logger.info("✅ Phase 2: Knowledge Ingestion Engine initialized")
+        
+        # Phase 3: Personalization Engine
+        personalization_engine = PersonalizationEngine()
+        logger.info("✅ Phase 3: Personalization Engine initialized")
+        
+        # Phase 4: Context Orchestrator
+        context_orchestrator = ContextOrchestrator()
+        logger.info("✅ Phase 4: Context Orchestrator initialized")
+        
+        # Phase 5: AI Integration Engine
+        ai_integration_engine = AIIntegrationEngine()
+        logger.info("✅ Phase 5: AI Integration Engine initialized")
+        
+        # Store systems globally for tool access
+        global phase1_scanner, phase2_knowledge, phase3_personalization, phase4_orchestrator, phase5_ai
+        phase1_scanner = project_scanner
+        phase2_knowledge = knowledge_engine
+        phase3_personalization = personalization_engine
+        phase4_orchestrator = context_orchestrator
+        phase5_ai = ai_integration_engine
+        
+        logger.info("🎉 All Phase 1-5 systems successfully integrated!")
+        
+    except Exception as e:
+        logger.error(f"❌ Error initializing Phase 1-5 systems: {str(e)}")
+        logger.warning("⚠️ Some advanced features may not be available")
+        # Initialize as None to prevent crashes
+        phase1_scanner = None
+        phase2_knowledge = None
+        phase3_personalization = None
+        phase4_orchestrator = None
+        phase5_ai = None
+    
     # Only register essential debugging tools in debug mode
     debug_mode = os.getenv("DEBUG_MODE", "false").lower() == "true"
     
@@ -149,10 +207,14 @@ def initialize_server():
     # Count actual MCP tools (our 6 consolidated tools)
     actual_mcp_tools = 6  # We have exactly 6 consolidated tools
     
+    # Count integrated Phase 1-5 systems
+    integrated_phases = sum(1 for p in [phase1_scanner, phase2_knowledge, phase3_personalization, phase4_orchestrator, phase5_ai] if p is not None)
+    
     logger.info(f"🧠 Brain Interface ready with {len(brain.get_tool_info())} cognitive functions")
     logger.info(f"🎯 Consolidated Tool System: {actual_mcp_tools} tools organized in 6 cognitive domains")
+    logger.info(f"🚀 Phase 1-5 Integration: {integrated_phases}/5 systems successfully integrated")
     logger.info(f"🔌 Loaded {len(plugin_manager.registry.plugins)} plugins in background")
-    logger.info(f"🚀 Total MCP tools available: {actual_mcp_tools} consolidated tools")
+    logger.info(f"🚀 Total MCP tools available: {actual_mcp_tools} consolidated tools with Phase 1-5 backend")
     
 
 
@@ -1344,8 +1406,133 @@ def perceive_and_analyze(
         # This would call the actual assess_complexity function
         return {"message": "assess_complexity functionality available"}
     
+    # 🚀 PHASE 1-5 INTEGRATION ACTIONS
+    elif action == "project_scan":
+        """Phase 1: Project Intelligence Layer"""
+        if phase1_scanner is None:
+            return {"error": "Project Scanner not available", "phase": 1}
+
+        try:
+            # ProjectScanner already has project_root set during initialization
+            scan_result = phase1_scanner.scan_project()
+            return {
+                "success": True,
+                "phase": 1,
+                "system": "Project Scanner",
+                "result": scan_result,
+                "message": "Project scan completed successfully"
+            }
+        except Exception as e:
+            return {"error": f"Project scan failed: {str(e)}", "phase": 1}
+    
+    elif action == "knowledge_ingest":
+        """Phase 2: Knowledge Ingestion Engine"""
+        if phase2_knowledge is None:
+            return {"error": "Knowledge Engine not available", "phase": 2}
+
+        try:
+            project_root = kwargs.get('project_root', '/app')  # Default to Docker path
+            ingestion_result = phase2_knowledge.ingest_project_documentation(project_root)
+            return {
+                "success": True,
+                "phase": 2,
+                "system": "Knowledge Ingestion Engine",
+                "result": ingestion_result,
+                "message": "Knowledge ingestion completed successfully"
+            }
+        except Exception as e:
+            return {"error": f"Knowledge ingestion failed: {str(e)}", "phase": 2}
+    
+    elif action == "context_orchestration":
+        """Phase 4: Context Orchestrator"""
+        if phase4_orchestrator is None:
+            return {"error": "Context Orchestrator not available", "phase": 4}
+        
+        try:
+            context_request = kwargs.get('context_request', {})
+            if not context_request:
+                return {"error": "No context request provided", "phase": 4}
+            
+            orchestration_result = phase4_orchestrator.orchestrate_context(context_request)
+            return {
+                "success": True,
+                "phase": 4,
+                "system": "Context Orchestrator",
+                "result": orchestration_result,
+                "message": "Context orchestration completed successfully"
+            }
+        except Exception as e:
+            return {"error": f"Context orchestration failed: {str(e)}", "phase": 4}
+    
+    elif action == "ai_integration":
+        """Phase 5: AI Integration Engine"""
+        if phase5_ai is None:
+            return {"error": "AI Integration Engine not available", "phase": 5}
+        
+        try:
+            integration_data = kwargs.get('integration_data', {})
+            if not integration_data:
+                return {"error": "No integration data provided", "phase": 5}
+            
+            integration_result = phase5_ai.integrate_with_context_orchestrator(integration_data)
+            return {
+                "success": True,
+                "phase": 5,
+                "system": "AI Integration Engine",
+                "result": integration_result,
+                "message": "AI integration completed successfully"
+            }
+        except Exception as e:
+            return {"error": f"AI integration failed: {str(e)}", "phase": 5}
+    
+    elif action == "system_status":
+        """Show comprehensive system integration status"""
+        return {
+            "system_name": "Memory Context Manager v2 with Phase 1-5 Integration",
+            "integration_status": "ACTIVE",
+            "phases": {
+                "phase_1": {
+                    "name": "Project Intelligence Layer",
+                    "status": "✅ INTEGRATED" if phase1_scanner else "❌ NOT AVAILABLE",
+                    "system": "ProjectScanner",
+                    "capabilities": ["Project scanning", "File indexing", "Dependency detection", "Technology stack analysis"]
+                },
+                "phase_2": {
+                    "name": "Knowledge Ingestion Engine", 
+                    "status": "✅ INTEGRATED" if phase2_knowledge else "❌ NOT AVAILABLE",
+                    "system": "KnowledgeIngestionEngine",
+                    "capabilities": ["Document processing", "Concept extraction", "Knowledge graph building", "Semantic search"]
+                },
+                "phase_3": {
+                    "name": "Personalization & Behavior Injection",
+                    "status": "✅ INTEGRATED" if phase3_personalization else "❌ NOT AVAILABLE", 
+                    "system": "PersonalizationEngine",
+                    "capabilities": ["Pattern learning", "Workflow modeling", "Context suggestions", "Behavior injection"]
+                },
+                "phase_4": {
+                    "name": "Intelligent Context Orchestration",
+                    "status": "✅ INTEGRATED" if phase4_orchestrator else "❌ NOT AVAILABLE",
+                    "system": "ContextOrchestrator", 
+                    "capabilities": ["Context orchestration", "Source management", "Strategy selection", "Quality metrics"]
+                },
+                "phase_5": {
+                    "name": "Advanced AI Integration & Evolution",
+                    "status": "✅ INTEGRATED" if phase5_ai else "❌ NOT AVAILABLE",
+                    "system": "AIIntegrationEngine",
+                    "capabilities": ["Deep learning", "Evolutionary AI", "AI decision making", "Autonomous evolution"]
+                }
+            },
+            "total_phases": 5,
+            "integrated_phases": sum(1 for p in [phase1_scanner, phase2_knowledge, phase3_personalization, phase4_orchestrator, phase5_ai] if p is not None),
+            "mcp_tools": 6,
+            "integration_method": "Direct integration with consolidated MCP tools",
+            "architecture": "6-tool consolidated system with Phase 1-5 backend integration"
+        }
+    
     else:
-        return {"error": f"Unknown action: {action}. Available actions: brain_info, list_plugins, server_status, get_cursor_context, enhanced_context_retrieval, analyze_context_deeply, detect_patterns, assess_complexity"}
+        return {
+            "error": f"Unknown action: {action}. Available actions: brain_info, list_plugins, server_status, get_cursor_context, enhanced_context_retrieval, analyze_context_deeply, detect_patterns, assess_complexity, project_scan, knowledge_ingest, context_orchestration, ai_integration, system_status"
+        }
 
 # ===== DOMAIN 2: MEMORY & STORAGE =====
 @mcp.tool()
@@ -1438,8 +1625,71 @@ def processing_and_thinking(
         # This would call the actual refactor_safely function
         return {"message": "refactor_safely functionality available"}
     
+    # 🚀 PHASE 5 INTEGRATION: AI INTEGRATION ENGINE
+    elif action == "ai_integrate":
+        """Phase 5: AI Integration Engine"""
+        if phase5_ai is None:
+            return {"error": "AI Integration Engine not available", "phase": 5}
+        
+        try:
+            integration_type = kwargs.get('type', 'context_orchestration')
+            
+            if integration_type == 'context_orchestration':
+                # Integrate with context orchestrator
+                orchestrator_data = kwargs.get('orchestrator_data', {})
+                if not orchestrator_data:
+                    return {"error": "No orchestrator data provided", "phase": 5}
+                
+                integration_result = phase5_ai.integrate_with_context_orchestrator(orchestrator_data)
+                return {
+                    "success": True,
+                    "phase": 5,
+                    "system": "AI Integration Engine",
+                    "action": "context_orchestration",
+                    "result": integration_result,
+                    "message": "AI integration with context orchestrator completed"
+                }
+            
+            elif integration_type == 'development_session':
+                # Learn from development session
+                session_data = kwargs.get('session_data', {})
+                if not session_data:
+                    return {"error": "No session data provided", "phase": 5}
+                
+                learning_result = phase5_ai.learn_from_development_session(session_data)
+                return {
+                    "success": True,
+                    "phase": 5,
+                    "system": "AI Integration Engine",
+                    "action": "development_session",
+                    "result": learning_result,
+                    "message": "AI learning from development session completed"
+                }
+            
+            elif integration_type == 'ai_decision':
+                # Make AI decision
+                decision_context = kwargs.get('decision_context', {})
+                if not decision_context:
+                    return {"error": "No decision context provided", "phase": 5}
+                
+                decision_result = phase5_ai.make_ai_decision(decision_context)
+                return {
+                    "success": True,
+                    "phase": 5,
+                    "system": "AI Integration Engine",
+                    "action": "ai_decision",
+                    "result": decision_result,
+                    "message": "AI decision made successfully"
+                }
+            
+            else:
+                return {"error": f"Unknown AI integration type: {integration_type}", "phase": 5}
+                
+        except Exception as e:
+            return {"error": f"AI integration failed: {str(e)}", "phase": 5}
+    
     else:
-        return {"error": f"Unknown action: {action}. Available actions: think_deeply, reflect_enhanced, understand_deeply, code_analyze, debug_intelligently, refactor_safely"}
+        return {"error": f"Unknown action: {action}. Available actions: think_deeply, reflect_enhanced, understand_deeply, code_analyze, debug_intelligently, refactor_safely, ai_integrate"}
 
 # ===== DOMAIN 4: LEARNING & ADAPTATION =====
 @mcp.tool()
@@ -1485,8 +1735,55 @@ def learning_and_adaptation(
         # This would call the actual batch_workflow_processing function
         return {"message": "batch_workflow_processing functionality available"}
     
+    # 🚀 PHASE 3 INTEGRATION: PERSONALIZATION ENGINE
+    elif action == "personalization":
+        """Phase 3: Personalization & Behavior Injection"""
+        if phase3_personalization is None:
+            return {"error": "Personalization Engine not available", "phase": 3}
+        
+        try:
+            personalization_type = kwargs.get('type', 'learn_patterns')
+            
+            if personalization_type == 'learn_patterns':
+                # Learn from development session
+                session_data = kwargs.get('session_data', {})
+                if not session_data:
+                    return {"error": "No session data provided for learning", "phase": 3}
+                
+                learning_result = phase3_personalization.learn_from_development_session(session_data)
+                return {
+                    "success": True,
+                    "phase": 3,
+                    "system": "Personalization Engine",
+                    "action": "learn_patterns",
+                    "result": learning_result,
+                    "message": "Personalization learning completed successfully"
+                }
+            
+            elif personalization_type == 'get_suggestions':
+                # Get context suggestions
+                context_data = kwargs.get('context_data', {})
+                if not context_data:
+                    return {"error": "No context data provided for suggestions", "phase": 3}
+                
+                suggestions = phase3_personalization.get_context_suggestions(context_data)
+                return {
+                    "success": True,
+                    "phase": 3,
+                    "system": "Personalization Engine",
+                    "action": "get_suggestions",
+                    "result": suggestions,
+                    "message": "Context suggestions generated successfully"
+                }
+            
+            else:
+                return {"error": f"Unknown personalization type: {personalization_type}", "phase": 3}
+                
+        except Exception as e:
+            return {"error": f"Personalization failed: {str(e)}", "phase": 3}
+    
     else:
-        return {"error": f"Unknown action: {action}. Available actions: learn_from, continuous_learning_cycle, enhanced_workflow_execution, workflow_optimization, workflow_performance_analysis, batch_workflow_processing"}
+        return {"error": f"Unknown action: {action}. Available actions: learn_from, continuous_learning_cycle, enhanced_workflow_execution, workflow_optimization, workflow_performance_analysis, batch_workflow_processing, personalization"}
 
 # ===== DOMAIN 5: OUTPUT & ACTION =====
 @mcp.tool()
@@ -1532,8 +1829,30 @@ def output_and_action(
         # This would call the actual enhanced_context_workflow function
         return {"message": "enhanced_context_workflow functionality available"}
     
+    # 🚀 PHASE 4 INTEGRATION: CONTEXT ORCHESTRATOR
+    elif action == "orchestrate_context":
+        """Phase 4: Context Orchestrator"""
+        if phase4_orchestrator is None:
+            return {"error": "Context Orchestrator not available", "phase": 4}
+        
+        try:
+            context_request = kwargs.get('context_request', {})
+            if not context_request:
+                return {"error": "No context request provided", "phase": 4}
+            
+            orchestration_result = phase4_orchestrator.orchestrate_context(context_request)
+            return {
+                "success": True,
+                "phase": 4,
+                "system": "Context Orchestrator",
+                "result": orchestration_result,
+                "message": "Context orchestration completed successfully"
+            }
+        except Exception as e:
+            return {"error": f"Context orchestration failed: {str(e)}", "phase": 4}
+    
     else:
-        return {"error": f"Unknown action: {action}. Available actions: generate_memory_enhanced_response, orchestrate_tools, tool_performance_analysis, context_quality_assessment, workflow_health_check, enhanced_context_workflow"}
+        return {"error": f"Unknown action: {action}. Available actions: generate_memory_enhanced_response, orchestrate_tools, tool_performance_analysis, context_quality_assessment, workflow_health_check, enhanced_context_workflow, orchestrate_context"}
 
 # ===== DOMAIN 6: SELF-MONITORING =====
 @mcp.tool()

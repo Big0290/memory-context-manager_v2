@@ -1,0 +1,298 @@
+{
+  "preferences": {
+    "style_patterns": {
+      "total": 20,
+      "by_type": {
+        "naming": 12,
+        "structure": 8
+      },
+      "top_patterns": [
+        {
+          "pattern_type": "naming",
+          "pattern": "snake_case",
+          "confidence": 0.8,
+          "frequency": 1,
+          "examples": [
+            "def"
+          ],
+          "source_files": [
+            "web_app.py"
+          ],
+          "created_at": 1754957905.4734359,
+          "updated_at": 1754957905.4734359,
+          "id": "naming_snake_case_186"
+        },
+        {
+          "pattern_type": "naming",
+          "pattern": "camel_case",
+          "confidence": 0.8,
+          "frequency": 1,
+          "examples": [
+            "def"
+          ],
+          "source_files": [
+            "web_app.py"
+          ],
+          "created_at": 1754957905.47344,
+          "updated_at": 1754957905.47344,
+          "id": "naming_camel_case_186"
+        },
+        {
+          "pattern_type": "naming",
+          "pattern": "pascal_case",
+          "confidence": 0.8,
+          "frequency": 1,
+          "examples": [
+            "Create"
+          ],
+          "source_files": [
+            "web_app.py"
+          ],
+          "created_at": 1754957905.4734411,
+          "updated_at": 1754957905.4734411,
+          "id": "naming_pascal_case_186"
+        },
+        {
+          "pattern_type": "naming",
+          "pattern": "kebab_case",
+          "confidence": 0.8,
+          "frequency": 1,
+          "examples": [
+            "def"
+          ],
+          "source_files": [
+            "web_app.py"
+          ],
+          "created_at": 1754957905.473442,
+          "updated_at": 1754957905.473442,
+          "id": "naming_kebab_case_186"
+        },
+        {
+          "pattern_type": "structure",
+          "pattern": "class_organization",
+          "confidence": 0.7,
+          "frequency": 1,
+          "examples": [
+            "    def __init__(self, username, email, created_at):\n        self.username = username\n        self.e..."
+          ],
+          "source_files": [
+            "web_app.py"
+          ],
+          "created_at": 1754957905.473668,
+          "updated_at": 1754957905.473668,
+          "id": "structure_class_organization_186"
+        }
+      ]
+    },
+    "workflow_patterns": {
+      "total": 3,
+      "by_type": {
+        "web_development": 1,
+        "testing": 1,
+        "refactoring": 1
+      },
+      "top_patterns": [
+        {
+          "pattern_type": "web_development",
+          "sequence": [
+            "design",
+            "implement",
+            "test",
+            "deploy"
+          ],
+          "frequency": 1,
+          "success_rate": 1.0,
+          "time_spent": 180.0,
+          "context": {
+            "language": "python",
+            "framework": "flask",
+            "complexity": "medium"
+          },
+          "created_at": 1754957905.4736729,
+          "updated_at": 1754957905.4736729,
+          "id": "workflow_web_development_1754957905"
+        },
+        {
+          "pattern_type": "testing",
+          "sequence": [
+            "write_test",
+            "run_test",
+            "fix_issues",
+            "verify"
+          ],
+          "frequency": 1,
+          "success_rate": 1.0,
+          "time_spent": 90.0,
+          "context": {
+            "language": "python",
+            "framework": "pytest",
+            "complexity": "low"
+          },
+          "created_at": 1754957905.473783,
+          "updated_at": 1754957905.473783,
+          "id": "workflow_testing_1754957905"
+        },
+        {
+          "pattern_type": "refactoring",
+          "sequence": [
+            "analyze",
+            "plan",
+            "refactor",
+            "test",
+            "validate"
+          ],
+          "frequency": 1,
+          "success_rate": 1.0,
+          "time_spent": 150.0,
+          "context": {
+            "language": "python",
+            "task": "optimization",
+            "complexity": "high"
+          },
+          "created_at": 1754957905.4739358,
+          "updated_at": 1754957905.4739358,
+          "id": "workflow_refactoring_1754957905"
+        }
+      ]
+    },
+    "decision_patterns": {
+      "total": 3,
+      "by_type": {
+        "architecture": 1,
+        "testing": 1,
+        "optimization": 1
+      },
+      "top_patterns": [
+        {
+          "decision_type": "architecture",
+          "choice": "class-based models",
+          "reasoning": "Better data validation and serialization",
+          "alternatives": [
+            "dictionaries",
+            "dataclasses"
+          ],
+          "frequency": 1,
+          "success_rate": 1.0,
+          "context": {
+            "language": "python",
+            "domain": "web_development"
+          },
+          "created_at": 1754957905.473676,
+          "updated_at": 1754957905.473676,
+          "id": "decision_architecture_1754957905"
+        },
+        {
+          "decision_type": "testing",
+          "choice": "pytest framework",
+          "reasoning": "Better fixtures and parametrization",
+          "alternatives": [
+            "unittest",
+            "nose"
+          ],
+          "frequency": 1,
+          "success_rate": 1.0,
+          "context": {
+            "language": "python",
+            "domain": "testing"
+          },
+          "created_at": 1754957905.4737852,
+          "updated_at": 1754957905.4737852,
+          "id": "decision_testing_1754957905"
+        },
+        {
+          "decision_type": "optimization",
+          "choice": "caching strategy",
+          "reasoning": "Improve performance for frequently accessed data",
+          "alternatives": [
+            "database_only",
+            "redis_cache"
+          ],
+          "frequency": 1,
+          "success_rate": 1.0,
+          "context": {
+            "language": "python",
+            "domain": "performance"
+          },
+          "created_at": 1754957905.4739368,
+          "updated_at": 1754957905.4739368,
+          "id": "decision_optimization_1754957905"
+        }
+      ]
+    },
+    "learning_patterns": {
+      "total": 3,
+      "by_type": {
+        "new_framework": 1,
+        "testing_patterns": 1,
+        "performance_optimization": 1
+      },
+      "top_patterns": [
+        {
+          "learning_type": "new_framework",
+          "approach": "official_docs + examples",
+          "effectiveness": 0.95,
+          "time_to_mastery": 120.0,
+          "resources_used": [
+            "flask.palletsprojects.com",
+            "github examples"
+          ],
+          "context": {
+            "topic": "flask_framework",
+            "difficulty": "intermediate"
+          },
+          "created_at": 1754957905.4736798,
+          "updated_at": 1754957905.4736798,
+          "id": "learning_new_framework_1754957905"
+        },
+        {
+          "learning_type": "testing_patterns",
+          "approach": "practice + documentation",
+          "effectiveness": 0.88,
+          "time_to_mastery": 60.0,
+          "resources_used": [
+            "pytest.org",
+            "realpython.com"
+          ],
+          "context": {
+            "topic": "pytest_patterns",
+            "difficulty": "beginner"
+          },
+          "created_at": 1754957905.4737868,
+          "updated_at": 1754957905.4737868,
+          "id": "learning_testing_patterns_1754957905"
+        },
+        {
+          "learning_type": "performance_optimization",
+          "approach": "profiling + benchmarking",
+          "effectiveness": 0.92,
+          "time_to_mastery": 180.0,
+          "resources_used": [
+            "python.org",
+            "performance blogs"
+          ],
+          "context": {
+            "topic": "python_optimization",
+            "difficulty": "advanced"
+          },
+          "created_at": 1754957905.473939,
+          "updated_at": 1754957905.473939,
+          "id": "learning_performance_optimization_1754957905"
+        }
+      ]
+    }
+  },
+  "behavior_injection": {
+    "total_injections": 6,
+    "strategy_distribution": {
+      "proactive": 4,
+      "reactive": 1,
+      "predictive": 1
+    },
+    "average_suggestions": 1.5,
+    "recent_injections": 6
+  },
+  "learning_history": {
+    "total_sessions": 3,
+    "recent_sessions": 3
+  }
+}

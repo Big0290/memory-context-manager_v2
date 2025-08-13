@@ -64,12 +64,12 @@ jobs:
     - name: Run Complete Integration Test Suite
       run: |
         echo "🧪 Running Memory Context Manager v2 Complete Integration Tests"
-        python3 test_complete_integration.py --ci --verbose
+        python3 tests/integration/test_complete_integration.py --ci --verbose
         
     - name: Run Integration Tests with Pytest (Alternative)
       run: |
         # Run with pytest as backup validation
-        python3 -m pytest test_complete_integration.py::IntegrationTestSuite::run_all_tests -v --tb=short || echo "Pytest backup completed"
+        python3 -m pytest tests/integration/test_complete_integration.py::IntegrationTestSuite::run_all_tests -v --tb=short || echo "Pytest backup completed"
         
     - name: Generate Test Report
       if: always()

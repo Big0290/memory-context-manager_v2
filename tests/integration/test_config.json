@@ -1,0 +1,28 @@
+{
+  "test_environment": {
+    "database_path": "brain_memory_store/brain.db",
+    "mock_dependencies": true,
+    "verbose_logging": true,
+    "performance_monitoring": true
+  },
+  "integration_tests": {
+    "target_success_rate": 96.9,
+    "timeout_seconds": 300,
+    "retry_failed_tests": false,
+    "categories": [
+      "Database Integration",
+      "Brain Interface Systems",
+      "Enhanced Dream System",
+      "MCP Tool Integration",
+      "Performance Monitoring",
+      "Cross-Component Interactions",
+      "System Health Validation"
+    ]
+  },
+  "ci_cd": {
+    "generate_reports": true,
+    "upload_artifacts": true,
+    "fail_on_low_success": true,
+    "minimum_success_rate": 80
+  }
+}

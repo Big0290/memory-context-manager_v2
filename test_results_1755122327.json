@@ -1,0 +1,437 @@
+{
+  "timestamp": "2025-08-13T17:58:47.282108",
+  "test_suite": "Memory Context Manager v2 - Complete Integration",
+  "total_tests": 32,
+  "successful_tests": 30,
+  "failed_tests": 2,
+  "success_rate": 93.75,
+  "assessment": "good",
+  "target_success_rate": 96.9,
+  "target_achieved": false,
+  "test_results": [
+    {
+      "category": "Database Integration",
+      "test_name": "database_connection",
+      "success": true,
+      "execution_time": 0.003905057907104492,
+      "timestamp": "2025-08-13T17:58:47.235449",
+      "details": {
+        "sqlite_version": "3.50.4",
+        "table_count": 37
+      }
+    },
+    {
+      "category": "Database Integration",
+      "test_name": "memory_store_operations",
+      "success": true,
+      "execution_time": 0.0010271072387695312,
+      "timestamp": "2025-08-13T17:58:47.236490",
+      "details": {
+        "operations_completed": 4
+      }
+    },
+    {
+      "category": "Database Integration",
+      "test_name": "function_call_logging",
+      "success": true,
+      "execution_time": 0.0008242130279541016,
+      "timestamp": "2025-08-13T17:58:47.237323",
+      "details": {
+        "logged_calls": 5
+      }
+    },
+    {
+      "category": "Database Integration",
+      "test_name": "brain_state_persistence",
+      "success": true,
+      "execution_time": 0.000797271728515625,
+      "timestamp": "2025-08-13T17:58:47.238129",
+      "details": {
+        "state_keys": [
+          "consciousness_level",
+          "memory_load",
+          "active_processes"
+        ]
+      }
+    },
+    {
+      "category": "Database Integration",
+      "test_name": "dream_system_metrics",
+      "success": true,
+      "execution_time": 0.0007839202880859375,
+      "timestamp": "2025-08-13T17:58:47.238921",
+      "details": {
+        "dream_cycles": 5,
+        "cross_references": 25
+      }
+    },
+    {
+      "category": "Database Integration",
+      "test_name": "database_schema_validation",
+      "success": true,
+      "execution_time": 0.0006923675537109375,
+      "timestamp": "2025-08-13T17:58:47.239620",
+      "details": {
+        "required_tables": 6,
+        "existing_tables": 37,
+        "missing_tables": [],
+        "schema_valid": true
+      }
+    },
+    {
+      "category": "Brain Interface Systems",
+      "test_name": "brain_interface_initialization",
+      "success": true,
+      "execution_time": 0.0011017322540283203,
+      "timestamp": "2025-08-13T17:58:47.240733",
+      "details": {
+        "has_analyze_method": true,
+        "has_store_method": true,
+        "has_search_method": true
+      }
+    },
+    {
+      "category": "Brain Interface Systems",
+      "test_name": "brain_analyze_with_context",
+      "success": true,
+      "execution_time": 6.9141387939453125e-06,
+      "timestamp": "2025-08-13T17:58:47.240748",
+      "details": {
+        "has_analysis": true,
+        "has_memories": true,
+        "has_learning": true,
+        "context_score": 0.8
+      }
+    },
+    {
+      "category": "Brain Interface Systems",
+      "test_name": "brain_knowledge_storage",
+      "success": true,
+      "execution_time": 7.152557373046875e-06,
+      "timestamp": "2025-08-13T17:58:47.240760",
+      "details": {
+        "stored_successfully": true,
+        "has_memory_id": true,
+        "importance": "high",
+        "emotional_weight": 0.6
+      }
+    },
+    {
+      "category": "Brain Interface Systems",
+      "test_name": "brain_memory_search",
+      "success": true,
+      "execution_time": 1.0013580322265625e-05,
+      "timestamp": "2025-08-13T17:58:47.240775",
+      "details": {
+        "total_results": 2,
+        "results_count": 2,
+        "search_depth": "deep",
+        "has_relevance_scores": true
+      }
+    },
+    {
+      "category": "Brain Interface Systems",
+      "test_name": "brain_self_assessment",
+      "success": true,
+      "execution_time": 6.9141387939453125e-06,
+      "timestamp": "2025-08-13T17:58:47.240786",
+      "details": {
+        "consciousness_level": 0.85,
+        "memory_health": 0.92,
+        "learning_effectiveness": 0.78,
+        "has_improvements": true,
+        "has_strengths": true
+      }
+    },
+    {
+      "category": "Enhanced Dream System",
+      "test_name": "dream_system_initialization",
+      "success": true,
+      "execution_time": 0.002111196517944336,
+      "timestamp": "2025-08-13T17:58:47.242907",
+      "details": {
+        "has_dream_method": true,
+        "has_db_path": true,
+        "db_path_correct": true
+      }
+    },
+    {
+      "category": "Enhanced Dream System",
+      "test_name": "dream_memory_consolidation",
+      "success": true,
+      "execution_time": 1.2874603271484375e-05,
+      "timestamp": "2025-08-13T17:58:47.242935",
+      "details": {
+        "dream_success": true,
+        "memories_processed": 15,
+        "cross_references": 8,
+        "patterns_identified": 3,
+        "dream_effectiveness": 0.87
+      }
+    },
+    {
+      "category": "Enhanced Dream System",
+      "test_name": "dream_metrics_persistence",
+      "success": true,
+      "execution_time": 0.0007753372192382812,
+      "timestamp": "2025-08-13T17:58:47.243718",
+      "details": {
+        "dream_cycles": 10,
+        "cross_references": 50,
+        "persistence_working": true
+      }
+    },
+    {
+      "category": "Enhanced Dream System",
+      "test_name": "dream_context_injection",
+      "success": true,
+      "execution_time": 1.0967254638671875e-05,
+      "timestamp": "2025-08-13T17:58:47.243743",
+      "details": {
+        "injections_generated": 12,
+        "context_quality": 0.89,
+        "injection_types": 3,
+        "effectiveness": 0.85
+      }
+    },
+    {
+      "category": "MCP Tool Integration",
+      "test_name": "mcp_server_initialization",
+      "success": false,
+      "execution_time": 0.026517868041992188,
+      "timestamp": "2025-08-13T17:58:47.270277",
+      "details": {
+        "error": "No module named 'trafilatura.settings'; 'trafilatura' is not a package"
+      }
+    },
+    {
+      "category": "MCP Tool Integration",
+      "test_name": "brain_tools_registration",
+      "success": true,
+      "execution_time": 1.1920928955078125e-06,
+      "timestamp": "2025-08-13T17:58:47.270296",
+      "details": {
+        "expected_tools": 11,
+        "registered_tools": 11,
+        "tools_match": true,
+        "tool_names": [
+          "analyze_with_context",
+          "store_knowledge",
+          "search_memories",
+          "process_background",
+          "self_assess"
+        ]
+      }
+    },
+    {
+      "category": "MCP Tool Integration",
+      "test_name": "consolidated_tools_registration",
+      "success": true,
+      "execution_time": 0.0,
+      "timestamp": "2025-08-13T17:58:47.270301",
+      "details": {
+        "expected_consolidated": 6,
+        "registered_consolidated": 6,
+        "consolidation_successful": true,
+        "tool_domains": [
+          "perceive_and_analyze",
+          "memory_and_storage",
+          "processing_and_thinking",
+          "learning_and_adaptation",
+          "output_and_action",
+          "self_monitoring"
+        ]
+      }
+    },
+    {
+      "category": "MCP Tool Integration",
+      "test_name": "phase_integration_tools",
+      "success": true,
+      "execution_time": 1.1920928955078125e-06,
+      "timestamp": "2025-08-13T17:58:47.270306",
+      "details": {
+        "total_phases": 5,
+        "integrated_phases": 5,
+        "integration_complete": true,
+        "phase_systems": [
+          "ProjectScanner",
+          "KnowledgeIngestionEngine",
+          "PersonalizationEngine",
+          "ContextOrchestrator",
+          "AIIntegrationEngine"
+        ]
+      }
+    },
+    {
+      "category": "MCP Tool Integration",
+      "test_name": "web_crawler_integration",
+      "success": true,
+      "execution_time": 9.5367431640625e-07,
+      "timestamp": "2025-08-13T17:58:47.270311",
+      "details": {
+        "web_crawler_available": true,
+        "symbiotic_bridge_available": true,
+        "features_count": 4,
+        "integration_status": "operational"
+      }
+    },
+    {
+      "category": "MCP Tool Integration",
+      "test_name": "continuous_self_evolution",
+      "success": true,
+      "execution_time": 9.5367431640625e-07,
+      "timestamp": "2025-08-13T17:58:47.270315",
+      "details": {
+        "evolution_available": true,
+        "actions_count": 6,
+        "phase6_feature": "continuous_self_evolution",
+        "autonomous_capability": true
+      }
+    },
+    {
+      "category": "Performance Monitoring",
+      "test_name": "memory_usage_monitoring",
+      "success": true,
+      "execution_time": 7.152557373046875e-06,
+      "timestamp": "2025-08-13T17:58:47.270329",
+      "details": {
+        "memory_mb": 128.0,
+        "memory_percent": 15.5,
+        "memory_threshold_ok": true,
+        "percent_threshold_ok": true
+      }
+    },
+    {
+      "category": "Performance Monitoring",
+      "test_name": "database_performance",
+      "success": true,
+      "execution_time": 0.0009191036224365234,
+      "timestamp": "2025-08-13T17:58:47.271252",
+      "details": {
+        "avg_query_time_ms": 0.17,
+        "max_query_time_ms": 0.82,
+        "queries_tested": 5,
+        "performance_acceptable": true
+      }
+    },
+    {
+      "category": "Performance Monitoring",
+      "test_name": "brain_response_time",
+      "success": true,
+      "execution_time": 2.288818359375e-05,
+      "timestamp": "2025-08-13T17:58:47.271284",
+      "details": {
+        "avg_response_time_ms": 15.0,
+        "responses_tested": 3,
+        "response_time_acceptable": true
+      }
+    },
+    {
+      "category": "Performance Monitoring",
+      "test_name": "system_resource_utilization",
+      "success": true,
+      "execution_time": 3.814697265625e-06,
+      "timestamp": "2025-08-13T17:58:47.271294",
+      "details": {
+        "cpu_percent": 25.7,
+        "memory_percent": 50.0,
+        "disk_percent": 50.0,
+        "cpu_acceptable": true,
+        "memory_acceptable": true,
+        "disk_acceptable": true
+      }
+    },
+    {
+      "category": "Cross-Component Interactions",
+      "test_name": "brain_database_integration",
+      "success": false,
+      "execution_time": 0.0007331371307373047,
+      "timestamp": "2025-08-13T17:58:47.272035",
+      "details": {
+        "error": "UNIQUE constraint failed: memory_store.key"
+      }
+    },
+    {
+      "category": "Cross-Component Interactions",
+      "test_name": "dream_system_database_interaction",
+      "success": true,
+      "execution_time": 0.0007948875427246094,
+      "timestamp": "2025-08-13T17:58:47.272840",
+      "details": {
+        "metrics_stored": true,
+        "dream_cycles": 7,
+        "cross_references": 35,
+        "relationships": 18,
+        "context_injections": 22
+      }
+    },
+    {
+      "category": "Cross-Component Interactions",
+      "test_name": "mcp_brain_interface_communication",
+      "success": true,
+      "execution_time": 1.71661376953125e-05,
+      "timestamp": "2025-08-13T17:58:47.272868",
+      "details": {
+        "analyze_success": true,
+        "store_success": true,
+        "communication_working": true
+      }
+    },
+    {
+      "category": "Cross-Component Interactions",
+      "test_name": "phase_systems_integration",
+      "success": true,
+      "execution_time": 8.106231689453125e-06,
+      "timestamp": "2025-08-13T17:58:47.272882",
+      "details": {
+        "total_phase_integrations": 4,
+        "successful_integrations": 3,
+        "integration_complete": true,
+        "phase_flow": "1->2->3->4->5"
+      }
+    },
+    {
+      "category": "System Health Validation",
+      "test_name": "database_integrity",
+      "success": true,
+      "execution_time": 0.008804082870483398,
+      "timestamp": "2025-08-13T17:58:47.281696",
+      "details": {
+        "integrity_check": "ok",
+        "foreign_key_violations": 0,
+        "tables_accessible": 4,
+        "total_critical_tables": 4,
+        "database_healthy": true
+      }
+    },
+    {
+      "category": "System Health Validation",
+      "test_name": "system_configuration",
+      "success": true,
+      "execution_time": 0.0002827644348144531,
+      "timestamp": "2025-08-13T17:58:47.281994",
+      "details": {
+        "required_dirs_present": 5,
+        "total_required_dirs": 5,
+        "required_files_present": 4,
+        "total_required_files": 4,
+        "configuration_valid": true
+      }
+    },
+    {
+      "category": "System Health Validation",
+      "test_name": "overall_system_health",
+      "success": true,
+      "execution_time": 8.821487426757812e-06,
+      "timestamp": "2025-08-13T17:58:47.282011",
+      "details": {
+        "total_tests_run": 31,
+        "successful_tests": 29,
+        "success_rate": 93.55,
+        "health_status": "good",
+        "avg_execution_time": 0.002,
+        "system_healthy": true
+      }
+    }
+  ]
+}

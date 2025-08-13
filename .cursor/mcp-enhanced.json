@@ -1,0 +1,49 @@
+{
+  "mcpServers": {
+    "memory-context-manager-v2": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "memory_mcp_server",
+        "python",
+        "main.py"
+      ],
+      "env": {
+        "MCP_LOG_LEVEL": "INFO",
+        "OLLAMA_BASE_URL": "http://host.docker.internal:11434"
+      },
+      "description": "Complete AI Brain Ecosystem with Enhanced Thinking, Dream System, Background Processing, and Iteration Loops"
+    },
+    "enhanced-thinking-system": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "memory_mcp_server",
+        "python",
+        "-c",
+        "import asyncio; from core.brain.enhanced_thinking_system import EnhancedThinkingSystem; print('Enhanced Thinking System Ready')"
+      ],
+      "env": {
+        "MCP_LOG_LEVEL": "INFO"
+      },
+      "description": "Enhanced Thinking System with Background Process Integration and Iteration Analysis"
+    },
+    "enhanced-dream-system": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "memory_mcp_server",
+        "python",
+        "-c",
+        "import asyncio; from core.brain.enhanced_dream_system import EnhancedDreamSystem; print('Enhanced Dream System Ready')"
+      ],
+      "env": {
+        "MCP_LOG_LEVEL": "INFO"
+      },
+      "description": "Enhanced Dream System with Context Injection Optimization and Memory Consolidation"
+    }
+  }
+}

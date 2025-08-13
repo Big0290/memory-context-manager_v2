@@ -1,1 +1,39 @@
-{}
+{
+    "python.defaultInterpreterPath": "./.venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.formatting.provider": "black",
+    "python.sortImports.args": [
+        "--profile",
+        "black"
+    ],
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/.pytest_cache": true,
+        "**/.venv": true,
+        "**/node_modules": true
+    },
+    "search.exclude": {
+        "**/brain_memory_store": true,
+        "**/logs": true,
+        "**/.git": true
+    },
+    "mcp.servers": {
+        "memory-context-manager-v2": {
+            "command": "docker",
+            "args": [
+                "exec",
+                "-i",
+                "memory_mcp_server",
+                "python",
+                "main.py"
+            ],
+            "env": {
+                "MCP_LOG_LEVEL": "INFO",
+                "OLLAMA_BASE_URL": "http://host.docker.internal:11434"
+            }
+        }
+    }
+}

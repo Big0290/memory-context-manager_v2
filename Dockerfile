@@ -32,7 +32,7 @@ ENV PYTHONUNBUFFERED=1
 EXPOSE 8000
 
 # Health check endpoint
-COPY healthcheck.py .
+COPY utils/healthcheck.py .
 
 # Default command (can be overridden)
-CMD ["uv", "run", "python", "main.py"]
+CMD ["uv", "run", "--python", ".venv/bin/python", "main.py"]

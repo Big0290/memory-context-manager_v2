@@ -10,17 +10,22 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 # Import our Phase 1-5 systems for integration
-from project_scanner import ProjectScanner
-from knowledge_ingestion_engine import KnowledgeIngestionEngine
-from personalization_engine import PersonalizationEngine
-from context_orchestrator import ContextOrchestrator
-from ai_integration_engine import AIIntegrationEngine
+from core.intelligence import (
+    ProjectScanner,
+    KnowledgeIngestionEngine,
+    PersonalizationEngine,
+    ContextOrchestrator,
+    AIIntegrationEngine
+)
+
+# Import our enhanced web crawler and search engine systems
+from web_crawler import WebCrawlerMCPTools
+from integration import SymbioticIntegrationBridge
 
 from mcp.server.fastmcp import FastMCP
-from plugin_manager import PluginManager
-from brain_interface import BrainInterface
-from database import get_brain_db, patch_json_operations
-from function_call_logger import get_function_logger, log_mcp_tool, log_brain_function
+from src.plugin_manager import PluginManager
+from core.brain import BrainInterface
+from core.memory import get_brain_db, patch_json_operations, get_function_logger, log_mcp_tool, log_brain_function
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -33,7 +38,7 @@ mcp = FastMCP("Memory Context Manager with AI Memory")
 plugin_manager = PluginManager(["plugins"])
 
 # Initialize new tool registry
-from tool_registry import get_tool_registry
+from core.memory import get_tool_registry
 
 # Memory client for internal tool calls
 class MCPClient:
@@ -90,6 +95,10 @@ phase3_personalization = None
 phase4_orchestrator = None
 phase5_ai = None
 
+# Global enhanced system instances
+web_crawler_tools = None
+symbiotic_bridge = None
+
 # Global state for evolution engine
 global_state = type('GlobalState', (), {})()
 
@@ -137,6 +146,26 @@ def initialize_server():
     
     # Initialize clean brain interface (replaces technical tools)
     brain = BrainInterface(mcp, mcp_client)
+    
+    # 🕷️ Initialize enhanced web crawler and search engine systems
+    global web_crawler_tools, symbiotic_bridge
+    
+    try:
+        # Get the database path from brain_db
+        db_path = brain_db.db_path if hasattr(brain_db, 'db_path') else "brain_memory_store/brain.db"
+        web_crawler_tools = WebCrawlerMCPTools(db_path)
+        logger.info("✅ Enhanced Web Crawler MCP Tools initialized with search engine integration")
+        
+        symbiotic_bridge = SymbioticIntegrationBridge(db_path)
+        logger.info("✅ Symbiotic Integration Bridge initialized")
+        
+        logger.info("🎉 Enhanced web crawler and search engine systems successfully integrated!")
+        
+    except Exception as e:
+        logger.error(f"❌ Error initializing enhanced systems: {str(e)}")
+        logger.warning("⚠️ Web crawler and search engine features may not be available")
+        web_crawler_tools = None
+        symbiotic_bridge = None
     
     # 🚀 Initialize Phase 1-5 systems for integration
     logger.info("🚀 Initializing Phase 1-5 systems for integration...")

@@ -42,6 +42,16 @@ services:
       - OLLAMA_MODEL=phi3:mini
       - MEMORY_STORAGE_DIR=/app/brain_memory_store
       - DEBUG_MODE=false
+      # Google Custom Search API Configuration
+      - GOOGLE_CUSTOM_SEARCH_API_KEY=${GOOGLE_CUSTOM_SEARCH_API_KEY}
+      - GOOGLE_CUSTOM_SEARCH_ENGINE_ID=${GOOGLE_CUSTOM_SEARCH_ENGINE_ID}
+      # Bing Web Search API Configuration (optional)
+      - BING_SEARCH_API_KEY=${BING_SEARCH_API_KEY}
+      # Search Engine Settings
+      - ENABLE_GOOGLE_SEARCH=${ENABLE_GOOGLE_SEARCH:-true}
+      - ENABLE_BING_SEARCH=${ENABLE_BING_SEARCH:-false}
+      - SEARCH_RATE_LIMIT=${SEARCH_RATE_LIMIT:-100}
+      - MAX_RESULTS_PER_QUERY=${MAX_RESULTS_PER_QUERY:-50}
     volumes:
       - ./brain_memory_store:/app/brain_memory_store
       - ./logs:/app/logs
@@ -87,7 +97,7 @@ services:
       - '3000:8080'
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
-      - WEBUI_SECRET_KEY=your-secret-key-here
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
     volumes:
       - ollama_webui_data:/app/backend/data
     depends_on:

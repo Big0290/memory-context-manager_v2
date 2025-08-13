@@ -1,19 +1,19 @@
 {
-  "mcpServers": {
-    "memory-context-manager-v2": {
-      "command": "docker",
-      "args": [
-        "exec",
-        "-i",
-        "memory_mcp_server",
-        "uv",
-        "run",
-        "python",
-        "main.py"
-      ],
-      "env": {
-        "MCP_LOG_LEVEL": "INFO"
-      }
+    "mcpServers": {
+        "memory-context-manager-v2": {
+            "command": "docker",
+            "args": [
+                "exec",
+                "-i",
+                "memory_mcp_server",
+                "python",
+                "main.py"
+            ],
+            "env": {
+                "MCP_LOG_LEVEL": "INFO",
+                "OLLAMA_BASE_URL": "http://host.docker.internal:11434"
+            },
+            "description": "Enhanced AI Brain with Dream System, Background Processing, and Iteration Loops"
+        }
     }
-  }
 }

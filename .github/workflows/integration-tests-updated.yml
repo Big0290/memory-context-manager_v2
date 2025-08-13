@@ -64,57 +64,60 @@ jobs:
         
     - name: Initialize Test Environment
       run: |
-        # Create minimal test database and mock modules
-        python3 -c "
-        import sqlite3
-        import os
-        
-        # Create test database
-        os.makedirs('brain_memory_store', exist_ok=True)
-        with sqlite3.connect('brain_memory_store/brain.db') as conn:
-            # Create minimal required tables for testing
-            tables = [
-                'CREATE TABLE IF NOT EXISTS memory_store (key TEXT PRIMARY KEY, value TEXT, timestamp TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
-                'CREATE TABLE IF NOT EXISTS brain_state (key TEXT PRIMARY KEY, value TEXT, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
-                'CREATE TABLE IF NOT EXISTS function_calls (id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT, timestamp TEXT, function_name TEXT, function_type TEXT, success BOOLEAN DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
-                'CREATE TABLE IF NOT EXISTS dream_system_metrics (id INTEGER PRIMARY KEY, dream_cycles INTEGER DEFAULT 3, cross_references_processed INTEGER DEFAULT 30, relationships_enhanced INTEGER DEFAULT 15, context_injections_generated INTEGER DEFAULT 25, knowledge_synthesis_events INTEGER DEFAULT 12, memory_consolidation_cycles INTEGER DEFAULT 8, last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
-                'CREATE TABLE IF NOT EXISTS learning_bits (id INTEGER PRIMARY KEY, content TEXT, content_type TEXT, category TEXT, importance_score REAL DEFAULT 0.8, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
-                'CREATE TABLE IF NOT EXISTS cross_references (id INTEGER PRIMARY KEY, source_bit_id INTEGER, target_bit_id INTEGER, relationship_type TEXT DEFAULT \"related\", strength REAL DEFAULT 1.0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
-                'CREATE TABLE IF NOT EXISTS context_enhancement_pipeline (id INTEGER PRIMARY KEY, trigger_type TEXT, enhancement_type TEXT, status TEXT DEFAULT \"completed\", created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
-                'CREATE TABLE IF NOT EXISTS identity_profiles (id TEXT PRIMARY KEY, name TEXT, profile_data TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
-                'CREATE TABLE IF NOT EXISTS memory_chunks (id TEXT PRIMARY KEY, content TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
-                'CREATE TABLE IF NOT EXISTS conversation_memories (id INTEGER PRIMARY KEY, content TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)'
-            ]
-            
-            for table_sql in tables:
-                conn.execute(table_sql)
-            
-            # Insert test data
-            test_data = [
-                'INSERT OR IGNORE INTO dream_system_metrics (dream_cycles, cross_references_processed, relationships_enhanced, context_injections_generated, knowledge_synthesis_events, memory_consolidation_cycles) VALUES (3, 30, 15, 25, 12, 8)',
-                'INSERT OR IGNORE INTO memory_store (key, value, timestamp) VALUES (\"test_memory\", \"test_value\", \"2024-01-01T00:00:00\")',
-                'INSERT OR IGNORE INTO function_calls (function_name, function_type, success) VALUES (\"test_function\", \"test_type\", 1)',
-                'INSERT OR IGNORE INTO learning_bits (content, content_type, category, importance_score) VALUES (\"test_learning\", \"concept\", \"testing\", 0.8)',
-                'INSERT OR IGNORE INTO cross_references (source_bit_id, target_bit_id, relationship_type, strength) VALUES (1, 1, \"related\", 1.0)',
-                'INSERT OR IGNORE INTO context_enhancement_pipeline (trigger_type, enhancement_type) VALUES (\"test_trigger\", \"test_enhancement\")'
-            ]
-            
-            for data_sql in test_data:
-                conn.execute(data_sql)
-            
-            conn.commit()
-        
-        # Create mock MCP modules
-        os.makedirs('mcp/server', exist_ok=True)
-        with open('mcp/__init__.py', 'w') as f:
-            f.write('# Mock MCP module\\n')
-        with open('mcp/server/__init__.py', 'w') as f:
-            f.write('# Mock server\\n')
-        with open('mcp/server/fastmcp.py', 'w') as f:
-            f.write('class FastMCP:\\n    def __init__(self, name=\"test\"): self.name = name\\n    def tool(self, name=None, description=None):\\n        def decorator(func): return func\\n        return decorator\\n    def run(self, transport=\"stdio\"): pass\\n')
-        
-        print('✅ Test environment initialized')
-        "
+        # Create test database setup script
+        cat > setup_test_db.py << 'EOF'
+import sqlite3
+import os
+
+# Create test database
+os.makedirs('brain_memory_store', exist_ok=True)
+with sqlite3.connect('brain_memory_store/brain.db') as conn:
+    # Create minimal required tables for testing
+    tables = [
+        'CREATE TABLE IF NOT EXISTS memory_store (key TEXT PRIMARY KEY, value TEXT, timestamp TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
+        'CREATE TABLE IF NOT EXISTS brain_state (key TEXT PRIMARY KEY, value TEXT, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
+        'CREATE TABLE IF NOT EXISTS function_calls (id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT, timestamp TEXT, function_name TEXT, function_type TEXT, success BOOLEAN DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
+        'CREATE TABLE IF NOT EXISTS dream_system_metrics (id INTEGER PRIMARY KEY, dream_cycles INTEGER DEFAULT 3, cross_references_processed INTEGER DEFAULT 30, relationships_enhanced INTEGER DEFAULT 15, context_injections_generated INTEGER DEFAULT 25, knowledge_synthesis_events INTEGER DEFAULT 12, memory_consolidation_cycles INTEGER DEFAULT 8, last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
+        'CREATE TABLE IF NOT EXISTS learning_bits (id INTEGER PRIMARY KEY, content TEXT, content_type TEXT, category TEXT, importance_score REAL DEFAULT 0.8, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
+        'CREATE TABLE IF NOT EXISTS cross_references (id INTEGER PRIMARY KEY, source_bit_id INTEGER, target_bit_id INTEGER, relationship_type TEXT DEFAULT "related", strength REAL DEFAULT 1.0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
+        'CREATE TABLE IF NOT EXISTS context_enhancement_pipeline (id INTEGER PRIMARY KEY, trigger_type TEXT, enhancement_type TEXT, status TEXT DEFAULT "completed", created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
+        'CREATE TABLE IF NOT EXISTS identity_profiles (id TEXT PRIMARY KEY, name TEXT, profile_data TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
+        'CREATE TABLE IF NOT EXISTS memory_chunks (id TEXT PRIMARY KEY, content TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
+        'CREATE TABLE IF NOT EXISTS conversation_memories (id INTEGER PRIMARY KEY, content TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)'
+    ]
+    
+    for table_sql in tables:
+        conn.execute(table_sql)
+    
+    # Insert test data
+    test_data = [
+        'INSERT OR IGNORE INTO dream_system_metrics (dream_cycles, cross_references_processed, relationships_enhanced, context_injections_generated, knowledge_synthesis_events, memory_consolidation_cycles) VALUES (3, 30, 15, 25, 12, 8)',
+        'INSERT OR IGNORE INTO memory_store (key, value, timestamp) VALUES ("test_memory", "test_value", "2024-01-01T00:00:00")',
+        'INSERT OR IGNORE INTO function_calls (function_name, function_type, success) VALUES ("test_function", "test_type", 1)',
+        'INSERT OR IGNORE INTO learning_bits (content, content_type, category, importance_score) VALUES ("test_learning", "concept", "testing", 0.8)',
+        'INSERT OR IGNORE INTO cross_references (source_bit_id, target_bit_id, relationship_type, strength) VALUES (1, 1, "related", 1.0)',
+        'INSERT OR IGNORE INTO context_enhancement_pipeline (trigger_type, enhancement_type) VALUES ("test_trigger", "test_enhancement")'
+    ]
+    
+    for data_sql in test_data:
+        conn.execute(data_sql)
+    
+    conn.commit()
+
+# Create mock MCP modules
+os.makedirs('mcp/server', exist_ok=True)
+with open('mcp/__init__.py', 'w') as f:
+    f.write('# Mock MCP module\n')
+with open('mcp/server/__init__.py', 'w') as f:
+    f.write('# Mock server\n')
+with open('mcp/server/fastmcp.py', 'w') as f:
+    f.write('class FastMCP:\n    def __init__(self, name="test"): self.name = name\n    def tool(self, name=None, description=None):\n        def decorator(func): return func\n        return decorator\n    def run(self, transport="stdio"): pass\n')
+
+print('✅ Test environment initialized')
+EOF
+
+        # Run the setup script
+        python3 setup_test_db.py
         
     - name: Run Complete Integration Test Suite
       run: |
@@ -138,55 +141,59 @@ jobs:
       if: always()
       run: |
         echo "📊 Generating Integration Test Report"
-        python3 -c "
-        import json
-        import glob
-        import os
-        from datetime import datetime
+        # Create report generation script
+        cat > generate_report.py << 'EOF'
+import json
+import glob
+import os
+from datetime import datetime
+
+# Find latest test results file
+result_files = glob.glob('test_results_*.json')
+if result_files:
+    latest_file = max(result_files, key=os.path.getctime)
+    print(f'📄 Latest test results: {latest_file}')
+    
+    try:
+        with open(latest_file, 'r') as f:
+            results = json.load(f)
         
-        # Find latest test results file
-        result_files = glob.glob('test_results_*.json')
-        if result_files:
-          latest_file = max(result_files, key=os.path.getctime)
-          print(f'📄 Latest test results: {latest_file}')
-          
-          try:
-            with open(latest_file, 'r') as f:
-              results = json.load(f)
+        summary = results.get('summary', {})
+        print(f'📈 Test Summary:')
+        print(f'  Overall Status: {summary.get("overall_status", "UNKNOWN")}')
+        print(f'  Grade: {summary.get("grade", "N/A")}')
+        print(f'  Success Rate: {summary.get("success_rate", 0):.1%}')
+        print(f'  Tests Passed: {summary.get("tests_passed", 0)}/{summary.get("total_tests", 0)}')
+        
+        # Create GitHub Actions summary
+        with open('integration_test_summary.md', 'w') as f:
+            f.write('# Memory Context Manager v2 - Integration Test Results\n\n')
+            f.write(f'## Overall Status: {summary.get("overall_status", "UNKNOWN")}\n')
+            f.write(f'**Grade:** {summary.get("grade", "N/A")}\n\n')
+            f.write(f'**Success Rate:** {summary.get("success_rate", 0):.1%}\n\n')
+            f.write(f'**Tests Passed:** {summary.get("tests_passed", 0)}/{summary.get("total_tests", 0)}\n\n')
             
-            summary = results.get('summary', {})
-            print(f'📈 Test Summary:')
-            print(f'  Overall Status: {summary.get(\"overall_status\", \"UNKNOWN\")}')
-            print(f'  Grade: {summary.get(\"grade\", \"N/A\")}')
-            print(f'  Success Rate: {summary.get(\"success_rate\", 0):.1%}')
-            print(f'  Tests Passed: {summary.get(\"tests_passed\", 0)}/{summary.get(\"total_tests\", 0)}')
-            
-            # Create GitHub Actions summary
-            with open('integration_test_summary.md', 'w') as f:
-              f.write('# Memory Context Manager v2 - Integration Test Results\\n\\n')
-              f.write(f'## Overall Status: {summary.get(\"overall_status\", \"UNKNOWN\")}\\n')
-              f.write(f'**Grade:** {summary.get(\"grade\", \"N/A\")}\\n\\n')
-              f.write(f'**Success Rate:** {summary.get(\"success_rate\", 0):.1%}\\n\\n')
-              f.write(f'**Tests Passed:** {summary.get(\"tests_passed\", 0)}/{summary.get(\"total_tests\", 0)}\\n\\n')
-              
-              f.write('## Test Categories\\n\\n')
-              for category in results.get('test_categories', []):
+            f.write('## Test Categories\n\n')
+            for category in results.get('test_categories', []):
                 status = '✅' if category.get('passed') else '❌'
-                f.write(f'{status} **{category.get(\"category\", \"Unknown\")}**: {category.get(\"passed_tests\", 0)}/{category.get(\"total_tests\", 0)} passed\\n')
-              
-              f.write(f'\\n## Test Duration\\n{results.get(\"total_duration\", 0):.2f} seconds\\n')
-              f.write(f'\\n## Python Version\\n{\"${{ matrix.python-version }}\"}\\n')
-              f.write(f'\\n## Runner OS\\n{\"${{ runner.os }}\"}\\n')
-          except Exception as e:
-            print(f'Error processing results: {e}')
-        else:
-          print('⚠️ No test results file found')
-          # Create basic summary
-          with open('integration_test_summary.md', 'w') as f:
-            f.write('# Integration Test Results\\n\\n')
-            f.write('❌ No test results file found\\n')
-            f.write('This may indicate that tests failed to run or complete.\\n')
-        "
+                f.write(f'{status} **{category.get("category", "Unknown")}**: {category.get("passed_tests", 0)}/{category.get("total_tests", 0)} passed\n')
+            
+            f.write(f'\n## Test Duration\n{results.get("total_duration", 0):.2f} seconds\n')
+            f.write(f'\n## Python Version\n${{ matrix.python-version }}\n')
+            f.write(f'\n## Runner OS\n${{ runner.os }}\n')
+    except Exception as e:
+        print(f'Error processing results: {e}')
+else:
+    print('⚠️ No test results file found')
+    # Create basic summary
+    with open('integration_test_summary.md', 'w') as f:
+        f.write('# Integration Test Results\n\n')
+        f.write('❌ No test results file found\n')
+        f.write('This may indicate that tests failed to run or complete.\n')
+EOF
+
+        # Run the report generation script
+        python3 generate_report.py
         
     - name: Upload Test Results
       if: always()
@@ -315,79 +322,84 @@ jobs:
       run: |
         echo "⚡ Running Performance Benchmark"
         
-        python3 -c "
-        import time
-        import os
-        import sys
-        from datetime import datetime
-        
-        print('🏁 Memory Context Manager v2 - Performance Benchmark')
-        print('=' * 60)
-        
-        start_time = time.time()
-        
-        # Test basic system performance
-        print('Testing basic system performance...')
-        
-        # Test file I/O performance
-        io_start = time.time()
-        test_data = 'x' * 1000000  # 1MB of data
-        with open('test_file.txt', 'w') as f:
-          f.write(test_data)
-        with open('test_file.txt', 'r') as f:
-          read_data = f.read()
-        os.remove('test_file.txt')
-        io_time = time.time() - io_start
-        
-        print(f'📊 File I/O Performance: {io_time:.3f}s (1MB write/read)')
-        
-        # Test database operations if available
-        db_time = 0
-        if os.path.exists('brain_memory_store/brain.db'):
-          import sqlite3
-          db_start = time.time()
-          with sqlite3.connect('brain_memory_store/brain.db') as conn:
-            cursor = conn.cursor()
-            cursor.execute('SELECT COUNT(*) FROM memory_store')
-            cursor.execute('SELECT COUNT(*) FROM function_calls')
-            cursor.execute('SELECT COUNT(*) FROM learning_bits')
-          db_time = time.time() - db_start
-          print(f'📊 Database Query Performance: {db_time:.3f}s')
-        
-        total_time = time.time() - start_time
-        
-        print(f'⏱️  Total Benchmark Time: {total_time:.3f}s')
-        
-        # Performance thresholds
-        thresholds_passed = 0
-        total_thresholds = 3
-        
-        if io_time < 1.0:
-          print('✅ I/O Performance: PASS')
-          thresholds_passed += 1
-        else:
-          print('❌ I/O Performance: SLOW')
-        
-        if db_time < 0.1 or db_time == 0:
-          print('✅ Database Performance: PASS')
-          thresholds_passed += 1
-        else:
-          print('❌ Database Performance: SLOW')
-          
-        if total_time < 5.0:
-          print('✅ Overall Performance: PASS')
-          thresholds_passed += 1
-        else:
-          print('❌ Overall Performance: SLOW')
-          
-        performance_score = (thresholds_passed / total_thresholds) * 100
-        print(f'🎯 Performance Score: {performance_score:.0f}% ({thresholds_passed}/{total_thresholds} thresholds passed)')
-        
-        if performance_score >= 80:
-          print('🎉 Performance benchmark PASSED')
-        else:
-          print('⚠️ Performance benchmark needs attention')
-        "
+        # Create performance benchmark script
+        cat > benchmark.py << 'EOF'
+import time
+import os
+import sys
+from datetime import datetime
+
+print('🏁 Memory Context Manager v2 - Performance Benchmark')
+print('=' * 60)
+
+start_time = time.time()
+
+# Test basic system performance
+print('Testing basic system performance...')
+
+# Test file I/O performance
+io_start = time.time()
+test_data = 'x' * 1000000  # 1MB of data
+with open('test_file.txt', 'w') as f:
+    f.write(test_data)
+with open('test_file.txt', 'r') as f:
+    read_data = f.read()
+os.remove('test_file.txt')
+io_time = time.time() - io_start
+
+print(f'📊 File I/O Performance: {io_time:.3f}s (1MB write/read)')
+
+# Test database operations if available
+db_time = 0
+if os.path.exists('brain_memory_store/brain.db'):
+    import sqlite3
+    db_start = time.time()
+    with sqlite3.connect('brain_memory_store/brain.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) FROM sqlite_master WHERE type="table"')
+        table_count = cursor.fetchone()[0]
+        if table_count > 0:
+            cursor.execute('PRAGMA integrity_check')
+    db_time = time.time() - db_start
+    print(f'📊 Database Query Performance: {db_time:.3f}s')
+
+total_time = time.time() - start_time
+
+print(f'⏱️  Total Benchmark Time: {total_time:.3f}s')
+
+# Performance thresholds
+thresholds_passed = 0
+total_thresholds = 3
+
+if io_time < 1.0:
+    print('✅ I/O Performance: PASS')
+    thresholds_passed += 1
+else:
+    print('❌ I/O Performance: SLOW')
+
+if db_time < 0.1 or db_time == 0:
+    print('✅ Database Performance: PASS')
+    thresholds_passed += 1
+else:
+    print('❌ Database Performance: SLOW')
+    
+if total_time < 5.0:
+    print('✅ Overall Performance: PASS')
+    thresholds_passed += 1
+else:
+    print('❌ Overall Performance: SLOW')
+    
+performance_score = (thresholds_passed / total_thresholds) * 100
+print(f'🎯 Performance Score: {performance_score:.0f}% ({thresholds_passed}/{total_thresholds} thresholds passed)')
+
+if performance_score >= 80:
+    print('🎉 Performance benchmark PASSED')
+else:
+    print('⚠️ Performance benchmark needs attention')
+EOF
+
+        # Run the benchmark script
+        python3 benchmark.py
 
   notify-status:
     runs-on: ubuntu-latest

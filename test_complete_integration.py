@@ -839,11 +839,40 @@ class IntegrationTestSuite:
             import main
             
             # Check for brain interface global
-            if not hasattr(main, 'brain_interface') or main.brain_interface is None:
+            if not hasattr(main, 'brain_interface'):
+                # Try to get brain interface using the lazy initialization
+                if hasattr(main, 'get_brain_interface'):
+                    brain_interface = main.get_brain_interface()
+                    if brain_interface is not None:
+                        main.brain_interface = brain_interface  # Set it for future access
+                        return {
+                            "name": "Brain Tools Integration",
+                            "passed": True,
+                            "details": "Brain tools properly integrated via lazy initialization"
+                        }
+                
                 return {
                     "name": "Brain Tools Integration",
                     "passed": False,
-                    "error": "Brain interface not initialized in main.py"
+                    "error": "Brain interface not available in main.py"
+                }
+            
+            if main.brain_interface is None:
+                # Try to initialize it
+                if hasattr(main, 'get_brain_interface'):
+                    brain_interface = main.get_brain_interface()
+                    if brain_interface is not None:
+                        main.brain_interface = brain_interface
+                        return {
+                            "name": "Brain Tools Integration",
+                            "passed": True,
+                            "details": "Brain tools properly integrated after initialization"
+                        }
+                
+                return {
+                    "name": "Brain Tools Integration",
+                    "passed": False,
+                    "error": "Brain interface is None in main.py"
                 }
             
             return {

@@ -19,7 +19,8 @@ def install_and_mock_dependencies():
         'psutil': None,  # Should install normally
         'requests': None,
         'beautifulsoup4': create_bs4_mock,
-        'pydantic': create_pydantic_mock
+        'pydantic': create_pydantic_mock,
+        'trafilatura': create_trafilatura_mock
     }
     
     print("🔧 Setting up test environment dependencies...")
@@ -141,6 +142,20 @@ def create_bs4_mock():
     
     # Also create the 'bs4' alias for beautifulsoup4
     sys.modules['bs4'] = mock
+    return mock
+
+def create_trafilatura_mock():
+    """Create mock trafilatura module for testing"""
+    mock = ModuleType('trafilatura')
+    
+    def extract(downloaded, **kwargs):
+        return "mock extracted text"
+    
+    def fetch_url(url, **kwargs):
+        return f"mock content from {url}"
+    
+    mock.extract = extract
+    mock.fetch_url = fetch_url
     return mock
 
 if __name__ == "__main__":

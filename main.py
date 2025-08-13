@@ -105,12 +105,17 @@ brain_interface = None
 
 def get_brain_interface():
     """Get brain interface, initializing if necessary"""
-    global brain_interface
+    global brain_interface, mcp, mcp_client
     if brain_interface is None:
         try:
             # Initialize brain interface for testing purposes
             from core.brain import BrainInterface
-            brain_interface = BrainInterface()
+            
+            # Ensure we have mcp_client for initialization
+            if mcp_client is None:
+                mcp_client = MCPClient(plugin_manager.registry)
+            
+            brain_interface = BrainInterface(mcp, mcp_client)
             logger.info("🧠 Brain interface lazily initialized for testing")
         except Exception as e:
             logger.warning(f"⚠️ Could not initialize brain interface: {e}")
@@ -2420,9 +2425,12 @@ def _analyze_learning_content(source: str, content: str, content_type: str, lear
 
 # Ensure brain interface is available for testing
 try:
-    get_brain_interface()  # Initialize brain interface on import
+    brain_interface = get_brain_interface()  # Initialize brain interface on import
+    if brain_interface:
+        logger.info("🧠 Brain interface successfully initialized for testing")
 except Exception as e:
     logger.debug(f"Brain interface initialization deferred: {e}")
+    brain_interface = None
 
 if __name__ == "__main__":
     logger.info("Starting Memory Context Manager with AI Memory Integration...")

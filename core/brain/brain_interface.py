@@ -16,643 +16,512 @@ class BrainInterface:
     def __init__(self, mcp_server: FastMCP, mcp_client):
         self.mcp = mcp_server
         self.client = mcp_client
-        self._register_brain_tools()
+        # Remove decorator-based registration - we'll register tools directly in main.py
     
-    def _register_brain_tools(self):
-        """Register clean, human brain-inspired tools with enhanced contextual understanding"""
+    # Standalone async functions for direct MCP registration
+    
+    async def analyze_with_context(self, message: str, context: str = "conversation") -> dict:
+        """
+        🧠 Analyze any topic with deep context understanding and background processing
         
-        @self.mcp.tool(
-            name="analyze_with_context",
-            description="🧠 Analyze any topic with deep context understanding and background processing",
-            category="analysis",
-            complexity="advanced",
-            examples=[
-                "analyze_with_context: Analyze this problem with deep context",
-                "analyze_with_context: Reflect on our conversation progress",
-                "analyze_with_context: System analysis and optimization assessment"
-            ],
-            dependencies=["memory_system", "context_analyzer", "enhanced_thinking_system"],
-            performance_metrics=["thinking_effectiveness", "context_score", "response_time"]
-        )
-        async def analyze_with_context(message: str, context: str = "conversation") -> dict:
-            """
-            🧠 Analyze any topic with deep context understanding and background processing
-            
-            Like human thinking - processes information, recalls relevant memories,
-            and generates thoughtful responses. Now enhanced with deep contextual understanding,
-            background process integration, and iteration loop analysis.
-            
-            Args:
-                message: What you want to analyze or think about
-                context: Type of analysis (conversation, problem_solving, creative, system_analysis, etc.)
-            """
-            try:
-                # Use enhanced thinking system for system analysis and optimization contexts
-                if context in ["system_analysis", "continuous_improvement", "optimization", "background_processing", "iteration_loops"]:
-                    from core.brain.enhanced_thinking_system import EnhancedThinkingSystem
-                    
-                    # Get database path from the client or use default
-                    db_path = getattr(self.client, 'db_path', "brain_memory_store/brain.db")
-                    thinking_system = EnhancedThinkingSystem(db_path)
-                    enhanced_result = await thinking_system.think_deeply(message, context)
-                    
-                    logger.info(f"🧠 Enhanced analysis completed: {enhanced_result.get('thinking_effectiveness', 0):.1%} effectiveness")
-                    
-                    return enhanced_result
-                
-                # Use standard thinking for other contexts
-                # First, perform deep context analysis for enhanced understanding
-                context_analysis = await self._analyze_context_enhanced(message)
-                
-                # Use the underlying memory-enhanced chat with context insights
-                result = await self.client.call_tool(
-                    "ai_chat_with_memory", 
-                    user_message=message,
-                    ai_model_name="phi3:mini"
-                )
-                
-                if result.get("success"):
-                    return {
-                        "analysis_result": result.get("ai_response", ""),
-                        "recalled_memories": result.get("memory_context_used", ""),
-                        "new_learning": result.get("important_info_stored", []),
-                        "analysis_process": "context_analysis -> memory -> reflection -> response",
-                        "context_insights": context_analysis.get("insights", []),
-                        "context_recommendations": context_analysis.get("recommendations", []),
-                        "context_score": context_analysis.get("context_score", 0.0),
-                        "subtle_patterns": context_analysis.get("subtle_patterns", [])
-                    }
-                else:
-                    return {
-                        "analysis_result": f"Let me analyze: {message}",
-                        "recalled_memories": "",
-                        "new_learning": [],
-                        "context_insights": context_analysis.get("insights", []),
-                        "error": result.get("error", "Analysis process interrupted")
-                    }
-                    
-            except Exception as e:
-                logger.error(f"Enhanced analysis error: {str(e)}")
-                return {
-                    "analysis_result": f"I'm having trouble analyzing: {message}",
-                    "recalled_memories": "",
-                    "new_learning": [],
-                    "context_insights": [],
-                    "error": str(e),
-                    "fallback_mode": "standard_analysis"
-                }
-
-        @self.mcp.tool(
-            name="store_knowledge",
-            description="💾 Store important information with emotional weighting and context analysis",
-            category="memory",
-            complexity="intermediate",
-            examples=[
-                "store_knowledge: Store this important fact",
-                "store_knowledge: Remember this user preference",
-                "store_knowledge: Save this technical insight"
-            ],
-            dependencies=["memory_system", "context_analyzer"],
-            performance_metrics=["storage_success", "emotional_weight", "context_score"]
-        )
-        async def store_knowledge(information: str, importance: str = "medium") -> dict:
-            """
-            💾 Store important information with emotional weighting and context analysis
-            
-            Enhanced memory formation that stores information with emotional weight,
-            contextual tags, and deep understanding for future recall.
-            
-            Args:
-                information: What to store and remember
-                importance: How important (low, medium, high, critical)
-            """
-            try:
-                # Perform deep context analysis for enhanced memory formation
-                context_analysis = await self._analyze_context_enhanced(information)
-                
-                result = await self.client.call_tool(
-                    "auto_process_message",
-                    user_message=f"Store this knowledge: {information}"
-                )
-                
-                if result.get("success"):
-                    # Enhanced memory tags based on context analysis
-                    enhanced_tags = ["user_input", importance]
-                    if context_analysis.get("subtle_patterns"):
-                        enhanced_tags.append("context_enhanced")
-                    if context_analysis.get("context_layers", {}).get("implicit_goals", {}).get("detected_goals"):
-                        enhanced_tags.extend(context_analysis["context_layers"]["implicit_goals"]["detected_goals"])
-                    
-                    return {
-                        "stored": True,
-                        "what_learned": result.get("important_info_found", []),
-                        "memory_type": "declarative",
-                        "emotional_weight": importance,
-                        "recall_tags": enhanced_tags,
-                        "context_enhancement": {
-                            "context_score": context_analysis.get("context_score", 0.0),
-                            "implicit_goals": context_analysis.get("context_layers", {}).get("implicit_goals", {}),
-                            "complexity": context_analysis.get("context_layers", {}).get("complexity_level", {}),
-                            "insights": context_analysis.get("insights", [])
-                        }
-                    }
-                else:
-                    return {
-                        "stored": False,
-                        "error": "Knowledge storage failed",
-                        "what_learned": [],
-                        "context_analysis": context_analysis
-                    }
-                    
-            except Exception as e:
-                logger.error(f"Knowledge storage error: {str(e)}")
-                return {
-                    "stored": False,
-                    "error": str(e),
-                    "what_learned": []
-                }
-
-        @self.mcp.tool(
-            name="search_memories",
-            description="🔍 Search through stored memories with contextual relevance scoring",
-            category="memory",
-            complexity="intermediate",
-            examples=[
-                "search_memories: Search for previous conversations about AI",
-                "search_memories: Find memories related to web development",
-                "search_memories: Comprehensive search for project insights"
-            ],
-            dependencies=["memory_system", "context_analyzer"],
-            performance_metrics=["relevance_score", "search_depth", "context_effectiveness"]
-        )
-        async def search_memories(query: str, depth: str = "surface") -> dict:
-            """
-            🔍 Search through stored memories with contextual relevance scoring
-            
-            Enhanced memory retrieval that searches through past experiences with
-            contextual understanding and relevance scoring.
-            
-            Args:
-                query: What to search for in memories
-                depth: How deep to search (surface, deep, comprehensive)
-            """
-            try:
-                # Perform deep context analysis on the query for better understanding
-                context_analysis = await self._analyze_context_enhanced(query)
-                
-                # Convert depth to search intensity
-                search_limit = {"surface": 3, "deep": 7, "comprehensive": 15}.get(depth, 5)
-                
-                result = await self.client.call_tool(
-                    "get_user_context",
-                    query=query
-                )
-                
-                if result.get("success"):
-                    # Enhanced relevance scoring using context analysis
-                    context_score = context_analysis.get("context_score", 0.5)
-                    complexity_level = context_analysis.get("context_layers", {}).get("complexity_level", {}).get("category", "moderate")
-                    
-                    # Adjust recall confidence based on context understanding
-                    base_confidence = 0.8 if result.get("context_summary") else 0.2
-                    context_enhanced_confidence = min(1.0, base_confidence + (context_score * 0.2))
-                    
-                    return {
-                        "memories_found": result.get("context_summary", ""),
-                        "search_depth": depth,
-                        "relevance": "high" if result.get("context_summary") else "low",
-                        "memory_fragments": result.get("relevant_memories", []),
-                        "search_confidence": context_enhanced_confidence,
-                        "context_enhancement": {
-                            "context_score": context_score,
-                            "complexity_level": complexity_level,
-                            "query_insights": context_analysis.get("insights", []),
-                            "search_recommendations": context_analysis.get("recommendations", [])
-                        }
-                    }
-                else:
-                    return {
-                        "memories_found": "",
-                        "search_depth": depth,
-                        "relevance": "none",
-                        "memory_fragments": [],
-                        "search_confidence": 0.0,
-                        "context_enhancement": context_analysis
-                    }
-                    
-            except Exception as e:
-                logger.error(f"Memory search error: {str(e)}")
-                return {
-                    "memories_found": "",
-                    "search_depth": depth,
-                    "relevance": "error",
-                    "memory_fragments": [],
-                    "search_confidence": 0.0,
-                    "error": str(e)
-                }
-
-        @self.mcp.tool(
-            name="process_background",
-            description="💤 Process information in background with memory consolidation and optimization",
-            category="memory",
-            complexity="advanced",
-            examples=[
-                "process_background: Consolidate recent memories",
-                "process_background: Background processing and optimization",
-                "process_background: Memory pattern analysis and synthesis"
-            ],
-            dependencies=["enhanced_dream_system", "memory_system"],
-            performance_metrics=["dream_effectiveness", "consolidation_impact", "context_injection_score"]
-        )
-        async def process_background() -> dict:
-            """
-            💤 Process information in background with memory consolidation and optimization
-            
-            Like human dreaming - processes recent experiences, consolidates
-            memories, and reorganizes knowledge structures using context injection.
-            """
-            try:
-                from core.brain.enhanced_dream_system import EnhancedDreamSystem
+        Like human thinking - processes information, recalls relevant memories,
+        and generates thoughtful responses. Now enhanced with deep contextual understanding,
+        background process integration, and iteration loop analysis.
+        
+        Args:
+            message: What you want to analyze or think about
+            context: Type of analysis (conversation, problem_solving, creative, system_analysis, etc.)
+        """
+        try:
+            # Use enhanced thinking system for system analysis and optimization contexts
+            if context in ["system_analysis", "continuous_improvement", "optimization", "background_processing", "iteration_loops"]:
+                from core.brain.enhanced_thinking_system import EnhancedThinkingSystem
                 
                 # Get database path from the client or use default
                 db_path = getattr(self.client, 'db_path', "brain_memory_store/brain.db")
-                dream_system = EnhancedDreamSystem(db_path)
+                thinking_system = EnhancedThinkingSystem(db_path)
+                enhanced_result = await thinking_system.think_deeply(message, context)
                 
-                # Perform enhanced dreaming
-                dream_result = await dream_system.dream()
+                logger.info(f"🧠 Enhanced analysis completed: {enhanced_result.get('thinking_effectiveness', 0):.1%} effectiveness")
                 
-                logger.info(f"💤 Background processing completed: {dream_result.get('dream_effectiveness', 0):.1%} effectiveness")
-                
-                return dream_result
-                
-            except Exception as e:
-                logger.error(f"Background processing error: {str(e)}")
+                return enhanced_result
+            
+            # Use standard thinking for other contexts
+            # First, perform deep context analysis for enhanced understanding
+            context_analysis = await self._analyze_context_enhanced(message)
+            
+            # Use the underlying memory-enhanced chat with context insights
+            result = await self.client.call_tool(
+                "ai_chat_with_memory", 
+                user_message=message,
+                ai_model_name="phi3:mini"
+            )
+            
+            if result.get("success"):
                 return {
-                    "processing_state": "error",
-                    "error": str(e),
-                    "timestamp": datetime.now().isoformat()
+                    "analysis_result": result.get("ai_response", ""),
+                    "recalled_memories": result.get("memory_context_used", ""),
+                    "new_learning": result.get("important_info_stored", []),
+                    "analysis_process": "context_analysis -> memory -> reflection -> response",
+                    "context_insights": context_analysis.get("insights", []),
+                    "context_recommendations": context_analysis.get("recommendations", []),
+                    "context_score": context_analysis.get("context_score", 0.0),
+                    "subtle_patterns": context_analysis.get("subtle_patterns", [])
                 }
+            else:
+                return {
+                    "analysis_result": f"Let me analyze: {message}",
+                    "recalled_memories": "",
+                    "new_learning": [],
+                    "context_insights": context_analysis.get("insights", []),
+                    "error": result.get("error", "Analysis process interrupted")
+                }
+                
+        except Exception as e:
+            logger.error(f"Enhanced analysis error: {str(e)}")
+            return {
+                "analysis_result": f"I'm having trouble analyzing: {message}",
+                "recalled_memories": "",
+                "new_learning": [],
+                "context_insights": [],
+                "error": str(e),
+                "fallback_mode": "standard_analysis"
+            }
 
-        @self.mcp.tool(
-            name="self_assess",
-            description="🤔 Perform self-assessment and metacognitive analysis",
-            category="analysis",
-            complexity="intermediate",
-            examples=[
-                "self_assess: Analyze my recent performance",
-                "self_assess: Self-assessment and improvement planning",
-                "self_assess: Metacognitive analysis of learning patterns"
-            ],
-            dependencies=["memory_system", "context_analyzer"],
-            performance_metrics=["reflection_depth", "insights_generated", "improvement_actions"]
-        )
-        async def self_assess(topic: str = "recent_interactions") -> dict:
-            """
-            🤔 Perform self-assessment and metacognitive analysis
+    async def store_knowledge(self, information: str, importance: str = "medium") -> dict:
+        """
+        💾 Store important information with emotional weighting and context analysis
+        
+        Enhanced memory formation that stores information with emotional weight,
+        contextual tags, and deep understanding for future recall.
+        
+        Args:
+            information: What to store and remember
+            importance: How important (low, medium, high, critical)
+        """
+        try:
+            # Perform deep context analysis for enhanced memory formation
+            context_analysis = await self._analyze_context_enhanced(information)
             
-            Enhanced self-awareness that examines thoughts, patterns,
-            and learning from recent experiences with contextual understanding.
+            result = await self.client.call_tool(
+                "auto_process_message",
+                user_message=f"Store this knowledge: {information}"
+            )
             
-            Args:
-                topic: What to assess (recent_interactions, learning_patterns, 
-                      emotional_responses, decision_making)
-            """
-            try:
-                # Perform deep context analysis on the reflection topic
-                context_analysis = await self._analyze_context_enhanced(f"Assess: {topic}")
+            if result.get("success"):
+                # Enhanced memory tags based on context analysis
+                enhanced_tags = ["user_input", importance]
+                if context_analysis.get("subtle_patterns"):
+                    enhanced_tags.append("context_enhanced")
+                if context_analysis.get("context_layers", {}).get("implicit_goals", {}).get("detected_goals"):
+                    enhanced_tags.extend(context_analysis["context_layers"]["implicit_goals"]["detected_goals"])
                 
-                # Get reflection insights from memory system
-                result = await self.client.call_tool(
-                    "get_user_context",
-                    query=f"assessment of {topic}"
-                )
+                return {
+                    "stored": True,
+                    "what_learned": result.get("important_info_found", []),
+                    "memory_type": "declarative",
+                    "emotional_weight": importance,
+                    "recall_tags": enhanced_tags,
+                    "context_enhancement": {
+                        "context_score": context_analysis.get("context_score", 0.0),
+                        "implicit_goals": context_analysis.get("context_layers", {}).get("implicit_goals", {}),
+                        "complexity": context_analysis.get("context_layers", {}).get("complexity_level", {}),
+                        "insights": context_analysis.get("insights", [])
+                    }
+                }
+            else:
+                return {
+                    "stored": False,
+                    "error": "Knowledge storage failed",
+                    "what_learned": [],
+                    "context_analysis": context_analysis
+                }
                 
-                if result.get("success"):
-                    return {
-                        "assessment_topic": topic,
-                        "insights": context_analysis.get("insights", []),
-                        "patterns_detected": context_analysis.get("subtle_patterns", []),
-                        "learning_opportunities": context_analysis.get("recommendations", []),
-                        "context_enhancement": {
-                            "context_score": context_analysis.get("context_score", 0.0),
-                            "complexity_level": context_analysis.get("context_layers", {}).get("complexity_level", {}),
-                            "implicit_goals": context_analysis.get("context_layers", {}).get("implicit_goals", {})
-                        },
-                        "assessment_depth": "deep" if context_analysis.get("context_score", 0) > 0.7 else "moderate"
+        except Exception as e:
+            logger.error(f"Knowledge storage error: {str(e)}")
+            return {
+                "stored": False,
+                "error": str(e),
+                "what_learned": []
+            }
+
+    async def search_memories(self, query: str, depth: str = "surface") -> dict:
+        """
+        🔍 Search through stored memories with contextual relevance scoring
+        
+        Enhanced memory retrieval that searches through past experiences with
+        contextual understanding and relevance scoring.
+        
+        Args:
+            query: What to search for in memories
+            depth: How deep to search (surface, deep, comprehensive)
+        """
+        try:
+            # Perform deep context analysis on the query for better understanding
+            context_analysis = await self._analyze_context_enhanced(query)
+            
+            # Convert depth to search intensity
+            search_limit = {"surface": 3, "deep": 7, "comprehensive": 15}.get(depth, 5)
+            
+            result = await self.client.call_tool(
+                "get_user_context",
+                query=query
+            )
+            
+            if result.get("success"):
+                # Enhanced relevance scoring using context analysis
+                context_score = context_analysis.get("context_score", 0.5)
+                complexity_level = context_analysis.get("context_layers", {}).get("complexity_level", {}).get("category", "moderate")
+                
+                # Adjust recall confidence based on context understanding
+                base_confidence = 0.8 if result.get("context_summary") else 0.2
+                context_enhanced_confidence = min(1.0, base_confidence + (context_score * 0.2))
+                
+                return {
+                    "memories_found": result.get("context_summary", ""),
+                    "search_depth": depth,
+                    "relevance": "high" if result.get("context_summary") else "low",
+                    "memory_fragments": result.get("relevant_memories", []),
+                    "search_confidence": context_enhanced_confidence,
+                    "context_enhancement": {
+                        "context_score": context_score,
+                        "complexity_level": complexity_level,
+                        "query_insights": context_analysis.get("insights", []),
+                        "search_recommendations": context_analysis.get("recommendations", [])
                     }
-                else:
-                    return {
-                        "assessment_topic": topic,
-                        "insights": context_analysis.get("insights", []),
-                        "patterns_detected": [],
-                        "learning_opportunities": [],
-                        "context_enhancement": context_analysis,
-                        "assessment_depth": "basic"
-                    }
-                    
-            except Exception as e:
-                logger.error(f"Self-assessment error: {str(e)}")
+                }
+            else:
+                return {
+                    "memories_found": "",
+                    "search_depth": depth,
+                    "relevance": "none",
+                    "memory_fragments": [],
+                    "search_confidence": 0.0,
+                    "context_enhancement": context_analysis
+                }
+                
+        except Exception as e:
+            logger.error(f"Memory search error: {str(e)}")
+            return {
+                "memories_found": "",
+                "search_depth": depth,
+                "relevance": "error",
+                "memory_fragments": [],
+                "search_confidence": 0.0,
+                "error": str(e)
+            }
+
+    async def process_background(self) -> dict:
+        """
+        💤 Process information in background with memory consolidation and optimization
+        
+        Like human dreaming - processes recent experiences, consolidates
+        memories, and reorganizes knowledge structures using context injection.
+        """
+        try:
+            from core.brain.enhanced_dream_system import EnhancedDreamSystem
+            
+            # Get database path from the client or use default
+            db_path = getattr(self.client, 'db_path', "brain_memory_store/brain.db")
+            dream_system = EnhancedDreamSystem(db_path)
+            
+            # Perform enhanced dreaming
+            dream_result = await dream_system.dream()
+            
+            logger.info(f"💤 Background processing completed: {dream_result.get('dream_effectiveness', 0):.1%} effectiveness")
+            
+            return dream_result
+            
+        except Exception as e:
+            logger.error(f"Background processing error: {str(e)}")
+            return {
+                "processing_state": "error",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
+
+    async def self_assess(self, topic: str = "recent_interactions") -> dict:
+        """
+        🤔 Perform self-assessment and metacognitive analysis
+        
+        Enhanced self-awareness that examines thoughts, patterns,
+        and learning from recent experiences with contextual understanding.
+        
+        Args:
+            topic: What to assess (recent_interactions, learning_patterns, 
+                  emotional_responses, decision_making)
+        """
+        try:
+            # Perform deep context analysis on the reflection topic
+            context_analysis = await self._analyze_context_enhanced(f"Assess: {topic}")
+            
+            # Get reflection insights from memory system
+            result = await self.client.call_tool(
+                "get_user_context",
+                query=f"assessment of {topic}"
+            )
+            
+            if result.get("success"):
                 return {
                     "assessment_topic": topic,
-                    "insights": [],
+                    "insights": context_analysis.get("insights", []),
+                    "patterns_detected": context_analysis.get("subtle_patterns", []),
+                    "learning_opportunities": context_analysis.get("recommendations", []),
+                    "context_enhancement": {
+                        "context_score": context_analysis.get("context_score", 0.0),
+                        "complexity_level": context_analysis.get("context_layers", {}).get("complexity_level", {}),
+                        "implicit_goals": context_analysis.get("context_layers", {}).get("implicit_goals", {})
+                    },
+                    "assessment_depth": "deep" if context_analysis.get("context_score", 0) > 0.7 else "moderate"
+                }
+            else:
+                return {
+                    "assessment_topic": topic,
+                    "insights": context_analysis.get("insights", []),
                     "patterns_detected": [],
                     "learning_opportunities": [],
-                    "error": str(e)
+                    "context_enhancement": context_analysis,
+                    "assessment_depth": "basic"
                 }
+                
+        except Exception as e:
+            logger.error(f"Self-assessment error: {str(e)}")
+            return {
+                "assessment_topic": topic,
+                "insights": [],
+                "patterns_detected": [],
+                "learning_opportunities": [],
+                "error": str(e)
+            }
 
-        @self.mcp.tool(
-            name="learn_from_content",
-            description="📚 Learn and integrate new information with context analysis",
-            category="learning",
-            complexity="intermediate",
-            examples=[
-                "learn_from_content: Process this new information",
-                "learn_from_content: Integrate this knowledge into memory",
-                "learn_from_content: Learn from this conversation"
-            ],
-            dependencies=["memory_system", "knowledge_ingestion"],
-            performance_metrics=["learning_success", "knowledge_integration", "memory_impact"]
-        )
-        async def learn_from_content(source: str, lesson_type: str = "experiential", content_type: str = "text") -> dict:
-            """
-            📚 Learn and integrate new information with context analysis
+    async def learn_from_content(self, source: str, lesson_type: str = "experiential", content_type: str = "text") -> dict:
+        """
+        📚 Learn and integrate new information with context analysis
+        
+        Enhanced learning function that processes text content with deep contextual understanding
+        and stores it in memory. Now analyzes context, complexity, and learning patterns.
+        
+        Args:
+            source: Text content or simple source to learn from
+            lesson_type: Type of learning (experiential, factual, technical, research)  
+            content_type: Source type - defaults to "text" for reliability
+        """
+        try:
+            # Perform deep context analysis on the learning source
+            context_analysis = await self._analyze_context_enhanced(source)
             
-            Enhanced learning function that processes text content with deep contextual understanding
-            and stores it in memory. Now analyzes context, complexity, and learning patterns.
+            # Process the learning content
+            result = await self.client.call_tool(
+                "auto_process_message",
+                user_message=f"Learn from this content: {source}"
+            )
             
-            Args:
-                source: Text content or simple source to learn from
-                lesson_type: Type of learning (experiential, factual, technical, research)  
-                content_type: Source type - defaults to "text" for reliability
-            """
-            try:
-                # Perform deep context analysis on the learning source
-                context_analysis = await self._analyze_context_enhanced(source)
+            if result.get("success"):
+                # Enhanced learning tags based on context analysis
+                learning_tags = [lesson_type, content_type, "context_enhanced"]
+                if context_analysis.get("context_layers", {}).get("complexity_level", {}).get("category"):
+                    learning_tags.append(context_analysis["context_layers"]["complexity_level"]["category"])
                 
-                # Process the learning content
-                result = await self.client.call_tool(
-                    "auto_process_message",
-                    user_message=f"Learn from this content: {source}"
-                )
-                
-                if result.get("success"):
-                    # Enhanced learning tags based on context analysis
-                    learning_tags = [lesson_type, content_type, "context_enhanced"]
-                    if context_analysis.get("context_layers", {}).get("complexity_level", {}).get("category"):
-                        learning_tags.append(context_analysis["context_layers"]["complexity_level"]["category"])
-                    
-                    return {
-                        "learning_success": True,
-                        "source_processed": source[:100] + "..." if len(source) > 100 else source,
-                        "lesson_type": lesson_type,
-                        "content_type": content_type,
-                        "knowledge_integrated": result.get("important_info_found", []),
-                        "learning_tags": learning_tags,
-                        "context_enhancement": {
-                            "context_score": context_analysis.get("context_score", 0.0),
-                            "complexity_assessment": context_analysis.get("context_layers", {}).get("complexity_level", {}),
-                            "learning_insights": context_analysis.get("insights", []),
-                            "integration_recommendations": context_analysis.get("recommendations", [])
-                        }
+                return {
+                    "learning_success": True,
+                    "source_processed": source[:100] + "..." if len(source) > 100 else source,
+                    "lesson_type": lesson_type,
+                    "content_type": content_type,
+                    "knowledge_integrated": result.get("important_info_found", []),
+                    "learning_tags": learning_tags,
+                    "context_enhancement": {
+                        "context_score": context_analysis.get("context_score", 0.0),
+                        "complexity_assessment": context_analysis.get("context_layers", {}).get("complexity_level", {}),
+                        "learning_insights": context_analysis.get("insights", []),
+                        "integration_recommendations": context_analysis.get("recommendations", [])
                     }
-                else:
-                    return {
-                        "learning_success": False,
-                        "source_processed": source[:100] + "..." if len(source) > 100 else source,
-                        "lesson_type": lesson_type,
-                        "content_type": content_type,
-                        "knowledge_integrated": [],
-                        "error": result.get("error", "Learning process failed"),
-                        "context_enhancement": context_analysis
-                    }
-                    
-            except Exception as e:
-                logger.error(f"Learning error: {str(e)}")
+                }
+            else:
                 return {
                     "learning_success": False,
                     "source_processed": source[:100] + "..." if len(source) > 100 else source,
                     "lesson_type": lesson_type,
                     "content_type": content_type,
                     "knowledge_integrated": [],
-                    "error": str(e)
+                    "error": result.get("error", "Learning process failed"),
+                    "context_enhancement": context_analysis
                 }
+                
+        except Exception as e:
+            logger.error(f"Learning error: {str(e)}")
+            return {
+                "learning_success": False,
+                "source_processed": source[:100] + "..." if len(source) > 100 else source,
+                "lesson_type": lesson_type,
+                "content_type": content_type,
+                "knowledge_integrated": [],
+                "error": str(e)
+            }
 
-        @self.mcp.tool(
-            name="check_system_status",
-            description="📊 Check current system status, consciousness, and cognitive load",
-            category="monitoring",
-            complexity="basic",
-            examples=[
-                "check_system_status: Check my current mental state",
-                "check_system_status: Assess cognitive load and awareness",
-                "check_system_status: Monitor system consciousness status"
-            ],
-            dependencies=["memory_system", "context_analyzer"],
-            performance_metrics=["consciousness_level", "cognitive_load", "awareness_score"]
-        )
-        async def check_system_status() -> dict:
-            """
-            📊 Check current system status, consciousness, and cognitive load
+    async def check_system_status(self) -> dict:
+        """
+        📊 Check current system status, consciousness, and cognitive load
+        
+        Like human self-monitoring - examines current mental state,
+        active processes, and cognitive load.
+        """
+        try:
+            # Get current system status
+            system_status = await self._get_system_status()
             
-            Like human self-monitoring - examines current mental state,
-            active processes, and cognitive load.
-            """
-            try:
-                # Get current system status
-                system_status = await self._get_system_status()
-                
-                # Perform consciousness assessment
-                consciousness_level = self._assess_consciousness_level(system_status)
-                cognitive_load = self._assess_cognitive_load(system_status)
-                awareness_score = self._calculate_awareness_score(system_status)
-                
+            # Perform consciousness assessment
+            consciousness_level = self._assess_consciousness_level(system_status)
+            cognitive_load = self._assess_cognitive_load(system_status)
+            awareness_score = self._calculate_awareness_score(system_status)
+            
+            return {
+                "consciousness_state": "aware_and_responsive",
+                "consciousness_level": consciousness_level,
+                "cognitive_load": cognitive_load,
+                "awareness_score": awareness_score,
+                "active_processes": system_status.get("active_processes", []),
+                "memory_health": system_status.get("memory_health", "good"),
+                "system_status": system_status,
+                "timestamp": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"System status check error: {str(e)}")
+            return {
+                "consciousness_state": "error",
+                "consciousness_level": "unknown",
+                "cognitive_load": "unknown",
+                "awareness_score": 0.0,
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
+
+    async def get_memory_statistics(self) -> dict:
+        """
+        📈 Get comprehensive memory system statistics, health, and performance metrics
+        
+        Provides comprehensive overview of memory system performance,
+        database health, and memory growth patterns.
+        """
+        try:
+            # Get memory statistics from the system
+            result = await self.client.call_tool(
+                "get_user_context",
+                query="memory statistics and health"
+            )
+            
+            if result.get("success"):
                 return {
-                    "consciousness_state": "aware_and_responsive",
-                    "consciousness_level": consciousness_level,
-                    "cognitive_load": cognitive_load,
-                    "awareness_score": awareness_score,
-                    "active_processes": system_status.get("active_processes", []),
-                    "memory_health": system_status.get("memory_health", "good"),
-                    "system_status": system_status,
+                    "memory_system_status": "operational",
+                    "total_memories": result.get("total_memories", 0),
+                    "memory_health": result.get("memory_health", "good"),
+                    "recent_activity": result.get("recent_activity", []),
+                    "database_performance": result.get("database_performance", "optimal"),
+                    "memory_growth": result.get("memory_growth", "stable"),
+                    "context_injection_effectiveness": result.get("context_effectiveness", 0.0),
                     "timestamp": datetime.now().isoformat()
                 }
-                
-            except Exception as e:
-                logger.error(f"System status check error: {str(e)}")
+            else:
                 return {
-                    "consciousness_state": "error",
-                    "consciousness_level": "unknown",
-                    "cognitive_load": "unknown",
-                    "awareness_score": 0.0,
-                    "error": str(e),
-                    "timestamp": datetime.now().isoformat()
-                }
-
-        @self.mcp.tool(
-            name="get_memory_statistics",
-            description="📈 Get comprehensive memory system statistics, health, and performance metrics",
-            category="monitoring",
-            complexity="basic",
-            examples=[
-                "get_memory_statistics: Get memory system statistics",
-                "get_memory_statistics: Check database health and performance",
-                "get_memory_statistics: Monitor memory growth and usage"
-            ],
-            dependencies=["memory_system", "database"],
-            performance_metrics=["memory_count", "database_health", "growth_rate"]
-        )
-        async def get_memory_statistics() -> dict:
-            """
-            📈 Get comprehensive memory system statistics, health, and performance metrics
-            
-            Provides comprehensive overview of memory system performance,
-            database health, and memory growth patterns.
-            """
-            try:
-                # Get memory statistics from the system
-                result = await self.client.call_tool(
-                    "get_user_context",
-                    query="memory statistics and health"
-                )
-                
-                if result.get("success"):
-                    return {
-                        "memory_system_status": "operational",
-                        "total_memories": result.get("total_memories", 0),
-                        "memory_health": result.get("memory_health", "good"),
-                        "recent_activity": result.get("recent_activity", []),
-                        "database_performance": result.get("database_performance", "optimal"),
-                        "memory_growth": result.get("memory_growth", "stable"),
-                        "context_injection_effectiveness": result.get("context_effectiveness", 0.0),
-                        "timestamp": datetime.now().isoformat()
-                    }
-                else:
-                    return {
-                        "memory_system_status": "limited",
-                        "total_memories": 0,
-                        "memory_health": "unknown",
-                        "recent_activity": [],
-                        "database_performance": "unknown",
-                        "memory_growth": "unknown",
-                        "context_injection_effectiveness": 0.0,
-                        "error": result.get("error", "Could not retrieve memory statistics"),
-                        "timestamp": datetime.now().isoformat()
-                    }
-                    
-            except Exception as e:
-                logger.error(f"Memory statistics error: {str(e)}")
-                return {
-                    "memory_system_status": "error",
+                    "memory_system_status": "limited",
                     "total_memories": 0,
-                    "memory_health": "error",
+                    "memory_health": "unknown",
                     "recent_activity": [],
-                    "database_performance": "error",
-                    "memory_growth": "error",
+                    "database_performance": "unknown",
+                    "memory_growth": "unknown",
                     "context_injection_effectiveness": 0.0,
-                    "error": str(e),
+                    "error": result.get("error", "Could not retrieve memory statistics"),
                     "timestamp": datetime.now().isoformat()
                 }
+                
+        except Exception as e:
+            logger.error(f"Memory statistics error: {str(e)}")
+            return {
+                "memory_system_status": "error",
+                "total_memories": 0,
+                "memory_health": "error",
+                "recent_activity": [],
+                "database_performance": "error",
+                "memory_growth": "error",
+                "context_injection_effectiveness": 0.0,
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
 
-        @self.mcp.tool(
-            name="analyze_dream_system",
-            description="🧠 Analyze dream system effectiveness and context injection optimization",
-            category="analysis",
-            complexity="advanced",
-            examples=[
-                "analyze_dream_system: Analyze dream system effectiveness",
-                "analyze_dream_system: Check context injection optimization",
-                "analyze_dream_system: Dream system performance metrics"
-            ],
-            dependencies=["enhanced_dream_system", "memory_system"],
-            performance_metrics=["dream_effectiveness", "context_injection_score", "optimization_opportunities"]
-        )
-        async def analyze_dream_system() -> dict:
-            """
-            🧠 Analyze dream system effectiveness and context injection optimization
+    async def analyze_dream_system(self) -> dict:
+        """
+        🧠 Analyze dream system effectiveness and context injection optimization
+        
+        Analyzes dream effectiveness, context injection capabilities, and provides
+        insights for optimization.
+        """
+        try:
+            from core.brain.enhanced_dream_system import EnhancedDreamSystem
             
-            Analyzes dream effectiveness, context injection capabilities, and provides
-            insights for optimization.
-            """
-            try:
-                from core.brain.enhanced_dream_system import EnhancedDreamSystem
-                
-                # Get database path from the client or use default
-                db_path = getattr(self.client, 'db_path', "brain_memory_store/brain.db")
-                dream_system = EnhancedDreamSystem(db_path)
-                
-                # Get comprehensive dream analysis
-                dream_analysis = await dream_system.get_dream_status()
-                
-                return {
-                    "dream_system_status": "active",
-                    "dream_analysis": dream_analysis,
-                    "context_injection_status": "optimized",
-                    "optimization_recommendations": dream_analysis.get("optimization_recommendations", []),
-                    "timestamp": datetime.now().isoformat()
-                }
-                
-            except Exception as e:
-                logger.error(f"Dream system analysis error: {str(e)}")
-                return {
-                    "dream_system_status": "error",
-                    "dream_analysis": {},
-                    "context_injection_status": "unknown",
-                    "optimization_recommendations": [],
-                    "error": str(e),
-                    "timestamp": datetime.now().isoformat()
-                }
+            # Get database path from the client or use default
+            db_path = getattr(self.client, 'db_path', "brain_memory_store/brain.db")
+            dream_system = EnhancedDreamSystem(db_path)
+            
+            # Get comprehensive dream analysis
+            dream_analysis = await dream_system.get_dream_status()
+            
+            return {
+                "dream_system_status": "active",
+                "dream_analysis": dream_analysis,
+                "context_injection_status": "optimized",
+                "optimization_recommendations": dream_analysis.get("optimization_recommendations", []),
+                "timestamp": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Dream system analysis error: {str(e)}")
+            return {
+                "dream_system_status": "error",
+                "dream_analysis": {},
+                "context_injection_status": "unknown",
+                "optimization_recommendations": [],
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
 
-        @self.mcp.tool(
-            name="analyze_system_performance",
-            description="⚡ Comprehensive system performance analysis and optimization assessment",
-            category="analysis",
-            complexity="advanced",
-            examples=[
-                "analyze_system_performance: Complete system analysis",
-                "analyze_system_performance: Background process optimization",
-                "analyze_system_performance: Iteration loop analysis"
-            ],
-            dependencies=["enhanced_thinking_system", "memory_system"],
-            performance_metrics=["optimization_score", "background_health", "iteration_effectiveness"]
-        )
-        async def analyze_system_performance() -> dict:
-            """
-            ⚡ Comprehensive system performance analysis and optimization assessment
+    async def analyze_system_performance(self) -> dict:
+        """
+        ⚡ Comprehensive system performance analysis and optimization assessment
+        
+        Analyzes complete system optimization, background processes, iteration loops,
+        and provides detailed insights for continuous improvement.
+        """
+        try:
+            from core.brain.enhanced_thinking_system import EnhancedThinkingSystem
             
-            Analyzes complete system optimization, background processes, iteration loops,
-            and provides detailed insights for continuous improvement.
-            """
-            try:
-                from core.brain.enhanced_thinking_system import EnhancedThinkingSystem
-                
-                # Get database path from the client or use default
-                db_path = getattr(self.client, 'db_path', "brain_memory_store/brain.db")
-                thinking_system = EnhancedThinkingSystem(db_path)
-                
-                # Perform comprehensive system analysis
-                system_analysis = await thinking_system.think_deeply(
-                    "Analyze our complete system optimization and integration with background processes and iteration loops",
-                    "system_analysis"
-                )
-                
-                return {
-                    "system_optimization_status": "analyzed",
-                    "system_analysis": system_analysis,
-                    "optimization_insights": system_analysis.get("optimization_analysis", {}),
-                    "improvement_plan": system_analysis.get("improvement_plan", {}),
-                    "timestamp": datetime.now().isoformat()
-                }
-                
-            except Exception as e:
-                logger.error(f"System performance analysis error: {str(e)}")
-                return {
-                    "system_optimization_status": "error",
-                    "system_analysis": {},
-                    "optimization_insights": {},
-                    "improvement_plan": {},
-                    "error": str(e),
-                    "timestamp": datetime.now().isoformat()
-                }
+            # Get database path from the client or use default
+            db_path = getattr(self.client, 'db_path', "brain_memory_store/brain.db")
+            thinking_system = EnhancedThinkingSystem(db_path)
+            
+            # Perform comprehensive system analysis
+            system_analysis = await thinking_system.think_deeply(
+                "Analyze our complete system optimization and integration with background processes and iteration loops",
+                "system_analysis"
+            )
+            
+            return {
+                "system_optimization_status": "analyzed",
+                "system_analysis": system_analysis,
+                "optimization_insights": system_analysis.get("optimization_analysis", {}),
+                "improvement_plan": system_analysis.get("improvement_plan", {}),
+                "timestamp": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"System performance analysis error: {str(e)}")
+            return {
+                "system_optimization_status": "error",
+                "system_analysis": {},
+                "optimization_insights": {},
+                "improvement_plan": {},
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
 
     async def _analyze_context_enhanced(self, content: str) -> Dict[str, Any]:
         """Enhanced context analysis with multiple layers of understanding"""
@@ -742,7 +611,7 @@ class BrainInterface:
     def get_tool_info(self) -> Dict[str, Any]:
         """Get information about available brain tools"""
         return {
-            "total_tools": 9,
+            "total_tools": 10,
             "tool_categories": {
                 "analysis": ["analyze_with_context", "self_assess", "analyze_dream_system", "analyze_system_performance"],
                 "memory": ["store_knowledge", "search_memories", "process_background"],

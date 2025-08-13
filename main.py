@@ -25,6 +25,7 @@ from integration import SymbioticIntegrationBridge
 from mcp.server.fastmcp import FastMCP
 from src.plugin_manager import PluginManager
 from core.brain import BrainInterface
+from core.brain.tool_registry import ToolRegistry
 from core.memory import get_brain_db, patch_json_operations, get_function_logger, log_mcp_tool, log_brain_function
 
 # Setup logging
@@ -99,8 +100,8 @@ phase5_ai = None
 web_crawler_tools = None
 symbiotic_bridge = None
 
-# Global state for evolution engine
-global_state = type('GlobalState', (), {})()
+# Global brain interface instance
+brain_interface = None
 
 def initialize_server():
     """Initialize server with clean brain interface"""
@@ -146,6 +147,72 @@ def initialize_server():
     
     # Initialize clean brain interface (replaces technical tools)
     brain = BrainInterface(mcp, mcp_client)
+    
+    # Set global brain interface for tool access
+    global brain_interface
+    brain_interface = brain
+    
+    # Register agent-friendly brain tools with MCP server using add_tool method
+    logger.info("🧠 Registering agent-friendly brain tools with MCP server...")
+    try:
+        # Create wrapper functions that access the brain interface
+        async def analyze_with_context(message: str, context: str = "conversation") -> dict:
+            """🧠 Analyze any topic with deep context understanding and background processing"""
+            return await brain.analyze_with_context(message, context)
+            
+        async def store_knowledge(information: str, importance: str = "medium") -> dict:
+            """💾 Store important information with emotional weighting and context analysis"""
+            return await brain.store_knowledge(information, importance)
+            
+        async def search_memories(query: str, depth: str = "surface") -> dict:
+            """🔍 Search through stored memories with contextual relevance scoring"""
+            return await brain.search_memories(query, depth)
+            
+        async def process_background() -> dict:
+            """💤 Process information in background with memory consolidation and optimization"""
+            return await brain.process_background()
+            
+        async def self_assess(topic: str = "recent_interactions") -> dict:
+            """🤔 Perform self-assessment and metacognitive analysis"""
+            return await brain.self_assess(topic)
+            
+        async def learn_from_content(source: str, lesson_type: str = "experiential", content_type: str = "text") -> dict:
+            """📚 Learn and integrate new information with context analysis"""
+            return await brain.learn_from_content(source, lesson_type, content_type)
+            
+        async def check_system_status() -> dict:
+            """📊 Check current system status, consciousness, and cognitive load"""
+            return await brain.check_system_status()
+            
+        async def get_memory_statistics() -> dict:
+            """📈 Get comprehensive memory system statistics, health, and performance metrics"""
+            return await brain.get_memory_statistics()
+            
+        async def analyze_dream_system() -> dict:
+            """🧠 Analyze dream system effectiveness and context injection optimization"""
+            return await brain.analyze_dream_system()
+            
+        async def analyze_system_performance() -> dict:
+            """⚡ Comprehensive system performance analysis and optimization assessment"""
+            return await brain.analyze_system_performance()
+        
+        # Register tools using add_tool method instead of decorator
+        mcp.add_tool(analyze_with_context, name="analyze_with_context", description="🧠 Analyze any topic with deep context understanding and background processing")
+        mcp.add_tool(store_knowledge, name="store_knowledge", description="💾 Store important information with emotional weighting and context analysis")
+        mcp.add_tool(search_memories, name="search_memories", description="🔍 Search through stored memories with contextual relevance scoring")
+        mcp.add_tool(process_background, name="process_background", description="💤 Process information in background with memory consolidation and optimization")
+        mcp.add_tool(self_assess, name="self_assess", description="🤔 Perform self-assessment and metacognitive analysis")
+        mcp.add_tool(learn_from_content, name="learn_from_content", description="📚 Learn and integrate new information with context analysis")
+        mcp.add_tool(check_system_status, name="check_system_status", description="📊 Check current system status, consciousness, and cognitive load")
+        mcp.add_tool(get_memory_statistics, name="get_memory_statistics", description="📈 Get comprehensive memory system statistics, health, and performance metrics")
+        mcp.add_tool(analyze_dream_system, name="analyze_dream_system", description="🧠 Analyze dream system effectiveness and context injection optimization")
+        mcp.add_tool(analyze_system_performance, name="analyze_system_performance", description="⚡ Comprehensive system performance analysis and optimization assessment")
+        
+        logger.info("✅ All 10 agent-friendly brain tools successfully registered with MCP server using add_tool method!")
+        brain_tools_registered = 10
+    except Exception as e:
+        logger.error(f"❌ Brain tool registration failed: {str(e)}")
+        brain_tools_registered = 0
     
     # 🕷️ Initialize enhanced web crawler and search engine systems
     global web_crawler_tools, symbiotic_bridge
@@ -236,17 +303,19 @@ def initialize_server():
     # 🔧 CONSOLIDATED TOOLS REGISTERED WITH MCP SERVER
     logger.info("🔧 Consolidated tools are already registered with MCP server via @mcp.tool() decorators")
     
-    # Count actual MCP tools (our 6 consolidated tools)
-    actual_mcp_tools = 6  # We have exactly 6 consolidated tools
+    # Count actual MCP tools (our 6 consolidated tools + brain tools)
+    consolidated_tools = 6  # We have exactly 6 consolidated tools
+    brain_tools = brain_tools_registered  # Our agent-friendly brain tools
+    total_mcp_tools = consolidated_tools + brain_tools
     
     # Count integrated Phase 1-5 systems
     integrated_phases = sum(1 for p in [phase1_scanner, phase2_knowledge, phase3_personalization, phase4_orchestrator, phase5_ai] if p is not None)
     
-    logger.info(f"🧠 Brain Interface ready with {len(brain.get_tool_info())} cognitive functions")
-    logger.info(f"🎯 Consolidated Tool System: {actual_mcp_tools} tools organized in 6 cognitive domains")
+    logger.info(f"🧠 Brain Interface ready with {brain_tools} agent-friendly cognitive functions")
+    logger.info(f"🎯 Consolidated Tool System: {consolidated_tools} tools organized in 6 cognitive domains")
     logger.info(f"🚀 Phase 1-5 Integration: {integrated_phases}/5 systems successfully integrated")
     logger.info(f"🔌 Loaded {len(plugin_manager.registry.plugins)} plugins in background")
-    logger.info(f"🚀 Total MCP tools available: {actual_mcp_tools} consolidated tools with Phase 1-5 backend")
+    logger.info(f"🚀 Total MCP tools available: {total_mcp_tools} tools ({consolidated_tools} consolidated + {brain_tools} brain tools)")
     
 
 

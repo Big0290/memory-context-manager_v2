@@ -103,6 +103,20 @@ symbiotic_bridge = None
 # Global brain interface instance
 brain_interface = None
 
+def get_brain_interface():
+    """Get brain interface, initializing if necessary"""
+    global brain_interface
+    if brain_interface is None:
+        try:
+            # Initialize brain interface for testing purposes
+            from core.brain import BrainInterface
+            brain_interface = BrainInterface()
+            logger.info("🧠 Brain interface lazily initialized for testing")
+        except Exception as e:
+            logger.warning(f"⚠️ Could not initialize brain interface: {e}")
+            brain_interface = None
+    return brain_interface
+
 def initialize_server():
     """Initialize server with clean brain interface"""
     global mcp_client
@@ -2403,6 +2417,12 @@ def _analyze_learning_content(source: str, content: str, content_type: str, lear
     return evolution_strategy
 
 
+
+# Ensure brain interface is available for testing
+try:
+    get_brain_interface()  # Initialize brain interface on import
+except Exception as e:
+    logger.debug(f"Brain interface initialization deferred: {e}")
 
 if __name__ == "__main__":
     logger.info("Starting Memory Context Manager with AI Memory Integration...")

@@ -19,44 +19,75 @@ class EnhancedDreamSystem:
     
     def __init__(self, db_path: str):
         self.db_path = db_path
-        self.dream_cycles = 0
-        self.consolidation_metrics = {
-            'cross_references_processed': 0,
-            'relationships_enhanced': 0,
-            'context_injections_generated': 0,
-            'knowledge_synthesis_events': 0,
-            'memory_consolidation_cycles': 0
-        }
+        # Initialize dream system metrics table if it doesn't exist
+        self._init_dream_metrics_table()
+        # Load existing metrics from database
+        self.dream_cycles, self.consolidation_metrics = self._load_dream_metrics()
     
     async def dream(self) -> Dict[str, Any]:
         """Enhanced dream process leveraging context injection capabilities"""
+        start_time = datetime.now()
         logger.info("💤 ENHANCED DREAM SYSTEM ACTIVATED")
         logger.info("=" * 50)
+        logger.info(f"🕐 Dream Start Time: {start_time}")
+        logger.info(f"📊 Current Dream Cycle: {self.dream_cycles}")
+        logger.info(f"📈 Current Metrics: {self.consolidation_metrics}")
         
         try:
             # Phase 1: Context-Aware Memory Consolidation
+            logger.info("🚀 PHASE 1: Context-Aware Memory Consolidation")
+            phase1_start = datetime.now()
             consolidation_result = await self._context_aware_memory_consolidation()
+            phase1_duration = (datetime.now() - phase1_start).total_seconds()
+            logger.info(f"✅ Phase 1 Completed in {phase1_duration:.2f}s: {consolidation_result}")
             
             # Phase 2: Cross-Reference Pattern Analysis
+            logger.info("🚀 PHASE 2: Cross-Reference Pattern Analysis")
+            phase2_start = datetime.now()
             pattern_result = await self._analyze_cross_reference_patterns()
+            phase2_duration = (datetime.now() - phase2_start).total_seconds()
+            logger.info(f"✅ Phase 2 Completed in {phase2_duration:.2f}s: {pattern_result}")
             
             # Phase 3: Learning Relationship Enhancement
+            logger.info("🚀 PHASE 3: Learning Relationship Enhancement")
+            phase3_start = datetime.now()
             relationship_result = await self._enhance_learning_relationships()
+            phase3_duration = (datetime.now() - phase3_start).total_seconds()
+            logger.info(f"✅ Phase 3 Completed in {phase3_duration:.2f}s: {relationship_result}")
             
             # Phase 4: Context Injection Optimization
+            logger.info("🚀 PHASE 4: Context Injection Optimization")
+            phase4_start = datetime.now()
             context_result = await self._optimize_context_injection()
+            phase4_duration = (datetime.now() - phase4_start).total_seconds()
+            logger.info(f"✅ Phase 4 Completed in {phase4_duration:.2f}s: {context_result}")
             
             # Phase 5: Knowledge Synthesis and Creativity
+            logger.info("🚀 PHASE 5: Knowledge Synthesis and Creativity")
+            phase5_start = datetime.now()
             synthesis_result = await self._knowledge_synthesis_and_creativity()
+            phase5_duration = (datetime.now() - phase5_start).total_seconds()
+            logger.info(f"✅ Phase 5 Completed in {phase5_duration:.2f}s: {synthesis_result}")
             
             # Update dream cycle
             self.dream_cycles += 1
+            logger.info(f"🔄 Dream Cycle Updated: {self.dream_cycles}")
             
             # Calculate dream effectiveness
             dream_effectiveness = self._calculate_dream_effectiveness()
+            logger.info(f"📊 Dream Effectiveness Calculated: {dream_effectiveness:.1%}")
             
+            # Save metrics to database for persistence
+            logger.info("💾 Saving Dream Metrics to Database...")
+            self._save_dream_metrics()
+            logger.info(f"💾 Dream Metrics Saved: {self.consolidation_metrics}")
+            
+            # Calculate total duration
+            total_duration = (datetime.now() - start_time).total_seconds()
+            logger.info(f"⏱️ Total Dream Duration: {total_duration:.2f}s")
             logger.info(f"💤 DREAM CYCLE {self.dream_cycles} COMPLETED")
             logger.info(f"📊 Dream Effectiveness: {dream_effectiveness:.1%}")
+            logger.info("=" * 50)
             
             return {
                 "dream_state": "enhanced_active",
@@ -80,6 +111,109 @@ class EnhancedDreamSystem:
                 "timestamp": datetime.now().isoformat()
             }
     
+    def _init_dream_metrics_table(self):
+        """Initialize dream system metrics table if it doesn't exist"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS dream_system_metrics (
+                        id INTEGER PRIMARY KEY,
+                        dream_cycles INTEGER DEFAULT 0,
+                        cross_references_processed INTEGER DEFAULT 0,
+                        relationships_enhanced INTEGER DEFAULT 0,
+                        context_injections_generated INTEGER DEFAULT 0,
+                        knowledge_synthesis_events INTEGER DEFAULT 0,
+                        memory_consolidation_cycles INTEGER DEFAULT 0,
+                        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                
+                # Insert default record if table is empty
+                cursor.execute("SELECT COUNT(*) FROM dream_system_metrics")
+                if cursor.fetchone()[0] == 0:
+                    cursor.execute("""
+                        INSERT INTO dream_system_metrics 
+                        (dream_cycles, cross_references_processed, relationships_enhanced, 
+                         context_injections_generated, knowledge_synthesis_events, memory_consolidation_cycles)
+                        VALUES (0, 0, 0, 0, 0, 0)
+                    """)
+                
+                conn.commit()
+                logger.info("✅ Dream system metrics table initialized")
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize dream metrics table: {e}")
+    
+    def _load_dream_metrics(self) -> Tuple[int, Dict[str, int]]:
+        """Load dream system metrics from database"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM dream_system_metrics ORDER BY id DESC LIMIT 1")
+                row = cursor.fetchone()
+                
+                if row:
+                    dream_cycles = row[1]
+                    consolidation_metrics = {
+                        'cross_references_processed': row[2],
+                        'relationships_enhanced': row[3],
+                        'context_injections_generated': row[4],
+                        'knowledge_synthesis_events': row[5],
+                        'memory_consolidation_cycles': row[6]
+                    }
+                    logger.info(f"✅ Loaded dream metrics: {dream_cycles} cycles")
+                    return dream_cycles, consolidation_metrics
+                else:
+                    logger.warning("⚠️ No dream metrics found, using defaults")
+                    return 0, {
+                        'cross_references_processed': 0,
+                        'relationships_enhanced': 0,
+                        'context_injections_generated': 0,
+                        'knowledge_synthesis_events': 0,
+                        'memory_consolidation_cycles': 0
+                    }
+                    
+        except Exception as e:
+            logger.error(f"❌ Failed to load dream metrics: {e}")
+            return 0, {
+                'cross_references_processed': 0,
+                'relationships_enhanced': 0,
+                'context_injections_generated': 0,
+                'knowledge_synthesis_events': 0,
+                'memory_consolidation_cycles': 0
+            }
+    
+    def _save_dream_metrics(self):
+        """Save current dream system metrics to database"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE dream_system_metrics 
+                    SET dream_cycles = ?,
+                        cross_references_processed = ?,
+                        relationships_enhanced = ?,
+                        context_injections_generated = ?,
+                        knowledge_synthesis_events = ?,
+                        memory_consolidation_cycles = ?,
+                        last_updated = CURRENT_TIMESTAMP
+                    WHERE id = (SELECT id FROM dream_system_metrics ORDER BY id DESC LIMIT 1)
+                """, (
+                    self.dream_cycles,
+                    self.consolidation_metrics['cross_references_processed'],
+                    self.consolidation_metrics['relationships_enhanced'],
+                    self.consolidation_metrics['context_injections_generated'],
+                    self.consolidation_metrics['knowledge_synthesis_events'],
+                    self.consolidation_metrics['memory_consolidation_cycles']
+                ))
+                
+                conn.commit()
+                logger.info(f"✅ Dream metrics saved: {self.dream_cycles} cycles")
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to save dream metrics: {e}")
+    
     async def _context_aware_memory_consolidation(self) -> Dict[str, Any]:
         """Context-aware memory consolidation using cross-references"""
         logger.info("🧠 Phase 1: Context-Aware Memory Consolidation...")
@@ -89,6 +223,7 @@ class EnhancedDreamSystem:
                 cursor = conn.cursor()
                 
                 # Get recent learning bits with cross-references
+                logger.info("🔍 Querying recent learning bits with cross-references...")
                 cursor.execute("""
                     SELECT lb.id, lb.content, lb.content_type, lb.category, lb.importance_score,
                            COUNT(cr.id) as cross_ref_count
@@ -101,17 +236,21 @@ class EnhancedDreamSystem:
                 """)
                 
                 recent_bits = cursor.fetchall()
+                logger.info(f"📊 Found {len(recent_bits)} recent learning bits to process")
                 consolidation_events = 0
                 
-                for bit in recent_bits:
+                for i, bit in enumerate(recent_bits, 1):
                     bit_id, content, content_type, category, importance, cross_ref_count = bit
+                    logger.info(f"🔄 Processing bit {i}/{len(recent_bits)}: ID={bit_id}, Type={content_type}, Category={category}, Importance={importance:.2f}, CrossRefs={cross_ref_count}")
                     
                     # Consolidate based on cross-reference patterns
                     if cross_ref_count > 0:
                         consolidation_events += 1
                         
                         # Update importance based on cross-reference activity
+                        old_importance = importance
                         new_importance = min(1.0, importance + (cross_ref_count * 0.1))
+                        logger.info(f"📈 Updating importance: {old_importance:.2f} → {new_importance:.2f} (+{cross_ref_count * 0.1:.2f})")
                         
                         cursor.execute("""
                             UPDATE learning_bits 
@@ -125,9 +264,14 @@ class EnhancedDreamSystem:
                             (trigger_type, source_id, enhancement_type, status, priority, created_at)
                             VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                         """, ('dream_consolidation', bit_id, 'memory_consolidation', 'completed', 3))
+                        
+                        logger.info(f"✅ Bit {bit_id} consolidated successfully")
+                    else:
+                        logger.info(f"⏭️ Skipping bit {bit_id} (no cross-references)")
                 
                 conn.commit()
                 self.consolidation_metrics['memory_consolidation_cycles'] += 1
+                logger.info(f"💾 Database committed, consolidation_metrics updated: {self.consolidation_metrics}")
                 
                 logger.info(f"✅ Memory consolidation completed: {consolidation_events} events")
                 
@@ -151,6 +295,7 @@ class EnhancedDreamSystem:
                 cursor = conn.cursor()
                 
                 # Analyze cross-reference patterns
+                logger.info("🔍 Querying cross-reference patterns...")
                 cursor.execute("""
                     SELECT cr.relationship_type, cr.strength, 
                            lb1.content_type as source_type, lb1.category as source_category,
@@ -166,14 +311,17 @@ class EnhancedDreamSystem:
                 """)
                 
                 patterns = cursor.fetchall()
+                logger.info(f"📊 Found {len(patterns)} cross-reference patterns to analyze")
                 insights_generated = 0
                 
-                for pattern in patterns:
+                for i, pattern in enumerate(patterns, 1):
                     rel_type, strength, src_type, src_cat, tgt_type, tgt_cat, frequency = pattern
+                    logger.info(f"🔄 Analyzing pattern {i}/{len(patterns)}: Type={rel_type}, Strength={strength:.2f}, Frequency={frequency}, Source=({src_type}/{src_cat}) → Target=({tgt_type}/{tgt_cat})")
                     
                     # Generate insights based on patterns
                     if frequency >= 3 and strength > 0.6:
                         insights_generated += 1
+                        logger.info(f"💡 Generating insight for pattern {i}: Frequency={frequency} ≥ 3 AND Strength={strength:.2f} > 0.6")
                         
                         # Create insight record
                         cursor.execute("""
@@ -182,9 +330,14 @@ class EnhancedDreamSystem:
                              enhancement_type, status, priority, created_at)
                             VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                         """, ('pattern_insight', None, None, rel_type, 'insight_generation', 'pending', 2))
+                        
+                        logger.info(f"✅ Insight record created for pattern {i}")
+                    else:
+                        logger.info(f"⏭️ Skipping pattern {i}: Frequency={frequency} < 3 OR Strength={strength:.2f} ≤ 0.6")
                 
                 conn.commit()
                 self.consolidation_metrics['cross_references_processed'] += len(patterns)
+                logger.info(f"💾 Database committed, cross_references_processed updated: {self.consolidation_metrics['cross_references_processed']}")
                 
                 logger.info(f"✅ Pattern analysis completed: {insights_generated} insights generated")
                 

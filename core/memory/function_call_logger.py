@@ -86,6 +86,33 @@ class FunctionCallLogger:
             
             conn.commit()
     
+    def _determine_success_status(self, output_data: Any) -> bool:
+        """Enhanced success determination logic"""
+        if isinstance(output_data, dict):
+            # Multiple success indicators
+            if output_data.get("success") is True:
+                return True
+            if output_data.get("status") == "success":
+                return True
+            if output_data.get("learning_success") is True:
+                return True
+            if output_data.get("stored") is True:
+                return True
+            if output_data.get("analysis_result") and not output_data.get("error"):
+                return True
+            if output_data.get("memories_found") and not output_data.get("error"):
+                return True
+            # Check for error indicators
+            if output_data.get("error") or output_data.get("status") == "failed":
+                return False
+        elif isinstance(output_data, str) and output_data:
+            # Non-empty string response is considered success
+            return True
+        elif output_data is not None:
+            # Any non-None response is considered success
+            return True
+        return False
+
     def log_function_call(
         self, 
         function_name: str,
@@ -94,7 +121,7 @@ class FunctionCallLogger:
         output_data: Any = None,
         context_data: Dict = None,
         execution_time_ms: int = 0,
-        success: bool = True,
+        success: bool = None,
         error_message: str = None,
         user_message: str = None,
         memory_context: str = None,
@@ -109,6 +136,10 @@ class FunctionCallLogger:
             return 0
             
         try:
+            # Enhanced success determination if not explicitly provided
+            if success is None:
+                success = self._determine_success_status(output_data)
+            
             call_data = {
                 "session_id": self._session_id,
                 "timestamp": datetime.now().isoformat(),

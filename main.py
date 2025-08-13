@@ -196,6 +196,10 @@ def initialize_server():
             """⚡ Comprehensive system performance analysis and optimization assessment"""
             return await brain.analyze_system_performance()
         
+        async def get_comprehensive_logs(log_level: str = "INFO", max_lines: int = 1000) -> dict:
+            """📋 Get comprehensive system logs with detailed analysis"""
+            return await brain.get_comprehensive_logs(log_level, max_lines)
+        
         # Register tools using add_tool method instead of decorator
         mcp.add_tool(analyze_with_context, name="analyze_with_context", description="🧠 Analyze any topic with deep context understanding and background processing")
         mcp.add_tool(store_knowledge, name="store_knowledge", description="💾 Store important information with emotional weighting and context analysis")
@@ -207,9 +211,10 @@ def initialize_server():
         mcp.add_tool(get_memory_statistics, name="get_memory_statistics", description="📈 Get comprehensive memory system statistics, health, and performance metrics")
         mcp.add_tool(analyze_dream_system, name="analyze_dream_system", description="🧠 Analyze dream system effectiveness and context injection optimization")
         mcp.add_tool(analyze_system_performance, name="analyze_system_performance", description="⚡ Comprehensive system performance analysis and optimization assessment")
+        mcp.add_tool(get_comprehensive_logs, name="get_comprehensive_logs", description="📋 Get comprehensive system logs with detailed analysis")
         
-        logger.info("✅ All 10 agent-friendly brain tools successfully registered with MCP server using add_tool method!")
-        brain_tools_registered = 10
+        logger.info("✅ All 11 agent-friendly brain tools successfully registered with MCP server using add_tool method!")
+        brain_tools_registered = 11
     except Exception as e:
         logger.error(f"❌ Brain tool registration failed: {str(e)}")
         brain_tools_registered = 0

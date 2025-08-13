@@ -642,3 +642,125 @@ class BrainInterface:
                 "analyze_system_performance": "Comprehensive system analysis"
             }
         }
+    
+    async def get_comprehensive_logs(self, log_level: str = "INFO", max_lines: int = 1000) -> dict:
+        """
+        📋 Get comprehensive system logs with detailed analysis
+        
+        Retrieves and analyzes all system logs to show exactly what's happening
+        in your AI brain, including dream cycles, context injection, and all processes.
+        
+        Args:
+            log_level: Minimum log level to include (DEBUG, INFO, WARNING, ERROR)
+            max_lines: Maximum number of log lines to retrieve
+        """
+        try:
+            import os
+            import glob
+            import sqlite3
+            from datetime import datetime, timedelta
+            
+            # Get database path from the client or use default
+            db_path = getattr(self.client, 'db_path', "brain_memory_store/brain.db")
+            
+            # Collect logs from various sources
+            logs = {
+                "system_logs": [],
+                "dream_system_logs": [],
+                "database_logs": [],
+                "performance_metrics": {},
+                "recent_activity": [],
+                "log_summary": {}
+            }
+            
+            # 1. System logs from main application
+            try:
+                if os.path.exists("logs"):
+                    log_files = glob.glob("logs/*.log")
+                    for log_file in log_files[-3:]:  # Last 3 log files
+                        try:
+                            with open(log_file, 'r') as f:
+                                lines = f.readlines()[-max_lines:]
+                                logs["system_logs"].extend([line.strip() for line in lines if line.strip()])
+                        except Exception as e:
+                            logs["system_logs"].append(f"Error reading {log_file}: {str(e)}")
+            except Exception as e:
+                logs["system_logs"].append(f"Error accessing log directory: {str(e)}")
+            
+            # 2. Dream system metrics from database
+            try:
+                with sqlite3.connect(db_path) as conn:
+                    cursor = conn.cursor()
+                    
+                    # Get dream system metrics
+                    cursor.execute("SELECT * FROM dream_system_metrics ORDER BY id DESC LIMIT 1")
+                    dream_metrics = cursor.fetchone()
+                    if dream_metrics:
+                        logs["performance_metrics"]["dream_system"] = {
+                            "dream_cycles": dream_metrics[1],
+                            "cross_references_processed": dream_metrics[2],
+                            "relationships_enhanced": dream_metrics[3],
+                            "context_injections_generated": dream_metrics[4],
+                            "knowledge_synthesis_events": dream_metrics[5],
+                            "memory_consolidation_cycles": dream_metrics[6],
+                            "last_updated": dream_metrics[7]
+                        }
+                    
+                    # Get recent context enhancement pipeline activity
+                    cursor.execute("""
+                        SELECT trigger_type, enhancement_type, status, priority, created_at
+                        FROM context_enhancement_pipeline 
+                        ORDER BY created_at DESC LIMIT 50
+                    """)
+                    pipeline_activity = cursor.fetchall()
+                    logs["recent_activity"] = [
+                        {
+                            "trigger": row[0],
+                            "enhancement": row[1],
+                            "status": row[2],
+                            "priority": row[3],
+                            "timestamp": row[4]
+                        }
+                        for row in pipeline_activity
+                    ]
+                    
+                    # Get learning bits summary
+                    cursor.execute("SELECT COUNT(*) FROM learning_bits")
+                    total_learning_bits = cursor.fetchone()[0]
+                    
+                    cursor.execute("SELECT COUNT(*) FROM cross_references")
+                    total_cross_references = cursor.fetchone()[0]
+                    
+                    logs["performance_metrics"]["knowledge_base"] = {
+                        "total_learning_bits": total_learning_bits,
+                        "total_cross_references": total_cross_references,
+                        "cross_reference_density": total_cross_references / max(total_learning_bits, 1)
+                    }
+                    
+            except Exception as e:
+                logs["database_logs"].append(f"Error accessing database: {str(e)}")
+            
+            # 3. Log summary and analysis
+            total_log_lines = len(logs["system_logs"])
+            dream_cycles = logs["performance_metrics"].get("dream_system", {}).get("dream_cycles", 0)
+            recent_activities = len(logs["recent_activity"])
+            
+            logs["log_summary"] = {
+                "total_system_logs": total_log_lines,
+                "dream_cycles_completed": dream_cycles,
+                "recent_activities_tracked": recent_activities,
+                "log_collection_time": datetime.now().isoformat(),
+                "system_status": "active" if dream_cycles > 0 else "inactive"
+            }
+            
+            logger.info(f"📋 Comprehensive logs collected: {total_log_lines} lines, {dream_cycles} dream cycles")
+            
+            return logs
+            
+        except Exception as e:
+            logger.error(f"Comprehensive log collection error: {str(e)}")
+            return {
+                "log_collection_status": "error",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }

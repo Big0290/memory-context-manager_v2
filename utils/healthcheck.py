@@ -6,7 +6,7 @@ import sys
 import time
 from pathlib import Path
 
-def check_health():
+def health_check():
     """Simple health check"""
     try:
         # Check if brain memory store exists
@@ -33,6 +33,10 @@ def check_health():
     except Exception as e:
         print(f"Health check failed: {e}")
         return False
+
+def check_health():
+    """Alias for health_check for backward compatibility"""
+    return health_check()
 
 if __name__ == "__main__":
     if check_health():

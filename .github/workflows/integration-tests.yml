@@ -45,6 +45,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .
         pip install pytest pytest-asyncio pytest-cov psutil
+        pip install aiohttp aiosqlite requests beautifulsoup4 pydantic
         
     - name: Create Test Database Directory
       run: |

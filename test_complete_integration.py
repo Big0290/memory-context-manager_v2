@@ -18,6 +18,13 @@ For CI/CD:
     python3 test_complete_integration.py --ci --verbose --exit-on-failure
 """
 
+# Setup test environment dependencies first
+try:
+    from test_environment_requirements import install_and_mock_dependencies
+    install_and_mock_dependencies()
+except ImportError:
+    pass  # Continue if setup script not available
+
 import asyncio
 import sys
 import os
